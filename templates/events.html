@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="search-box">
+            <h2 class="text-center mb-4">Agenda de Eventos - Bazares</h2>
+            
+            <!-- Dropdown para seleccionar bazar -->
+            <div class="mb-4">
+                <label for="bazarSelect" class="form-label">Seleccione un bazar:</label>
+                <select id="bazarSelect" class="form-select form-select-lg">
+                    <option value="" selected disabled>-- Seleccione un bazar --</option>
+                    {% for bazar in bazares %}
+                    <option value="{{ loop.index0 }}">{{ bazar.nombrepunto }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Contenedor para detalles del bazar -->
+            <div id="bazarDetails" style="display: none;">
+                <!-- Los detalles se cargarán aquí -->
+            </div>
+
+            <!-- Formulario de comentarios -->
+            <div class="mt-4">
+                <h4>Comentarios o Observaciones</h4>
+                <form id="commentForm">
+                    <div class="mb-3">
+                        <textarea class="form-control" id="commentText" rows="3" 
+                                  placeholder="Ingrese sus comentarios sobre los bazares..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-custom">
+                        <i class="fas fa-paper-plane me-2"></i>Enviar Comentario
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="text-center mt-3">
+            <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Volver al Menú Principal
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Convertir los datos de bazares a JSON para usar en JavaScript
+const bazaresData = {{ bazares | tojson }};
+
+document.getElementById('bazarSelect').addEventListener('change', function() {
+    const selectedIndex = this.value;
+    const detailsContainer = document.getElementById('bazarDetails');
+    
+    if (selectedIndex !== '') {
+        const bazar = bazaresData[selectedIndex];
+        detailsContainer.innerHTML = `
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">${bazar.nombrepunto}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Tipo:</strong> ${bazar.tipo}</p>
+                            <p><strong>Dirección:</strong> ${bazar.direccion}</p>
+                            <p><strong>Comuna:</strong> ${bazar.comuna}</p>
+                            <p><strong>Fecha Inicio:</strong> ${bazar.fech_inicio}</p>
+                            <p><strong>Fecha Término:</strong> ${bazar.fech_termino}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Horarios:</h6>
+                            <p><strong>Lunes a Jueves:</strong> ${bazar.hora_sem}</p>
+                            <p><strong>Viernes:</strong> ${bazar.hora_vie}</p>
+                            <p><strong>Sábado:</strong> ${bazar.hora_sab}</p>
+                            <p><strong>Domingo:</strong> ${bazar.hora_dom}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        detailsContainer.style.display = 'block';
+    } else {
+        detailsContainer.style.display = 'none';
+    }
+});
+
+// Manejar el envío de comentarios
+document.getElementById('commentForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const comment = document.getElementById('commentText').value.trim();
+    
+    if (!comment) {
+        showNotification('Por favor ingrese un comentario', 'warning');
+        return;
+    }
+
+    fetch('/api/save_comment_events', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ comment: comment })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('Comentario guardado correctamente', 'success');
+            document.getElementById('commentText').value = '';
+        } else {
+            showNotification(data.message, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Error al guardar el comentario', 'error');
+    });
+});
+</script>
+{% endblock %}

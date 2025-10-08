@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="search-box">
+            <h2 class="text-center mb-4">Tutoriales de Venta</h2>
+            
+            <div class="row">
+                {% for tutorial in tutoriales %}
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                {% if tutorial.tipo == 'video' %}
+                                <i class="fas fa-video text-danger fa-2x me-3"></i>
+                                {% elif tutorial.tipo == 'pdf' %}
+                                <i class="fas fa-file-pdf text-danger fa-2x me-3"></i>
+                                {% elif tutorial.tipo == 'html' %}
+                                <i class="fas fa-code text-primary fa-2x me-3"></i>
+                                {% else %}
+                                <i class="fas fa-file text-secondary fa-2x me-3"></i>
+                                {% endif %}
+                                <div>
+                                    <h5 class="card-title mb-0">{{ tutorial.titulo }}</h5>
+                                    <small class="text-muted">{{ tutorial.tipo|upper }}</small>
+                                </div>
+                            </div>
+                            <p class="card-text">{{ tutorial.descripcion }}</p>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            {% if tutorial.tipo == 'video' %}
+                            <a href="{{ url_for('static', filename='tutoriales/' + tutorial.archivo) }}" 
+                               class="btn btn-outline-danger btn-sm" target="_blank">
+                                <i class="fas fa-play me-1"></i>Ver Video
+                            </a>
+                            {% elif tutorial.tipo == 'pdf' %}
+                            <a href="{{ url_for('static', filename='tutoriales/' + tutorial.archivo) }}" 
+                               class="btn btn-outline-danger btn-sm" target="_blank">
+                                <i class="fas fa-file-pdf me-1"></i>Abrir PDF
+                            </a>
+                            {% elif tutorial.tipo == 'html' %}
+                            <a href="{{ url_for('static', filename='tutoriales/' + tutorial.archivo) }}" 
+                               class="btn btn-outline-primary btn-sm" target="_blank">
+                                <i class="fas fa-external-link-alt me-1"></i>Abrir Tutorial
+                            </a>
+                            {% else %}
+                            <a href="{{ url_for('static', filename='tutoriales/' + tutorial.archivo) }}" 
+                               class="btn btn-outline-secondary btn-sm" target="_blank">
+                                <i class="fas fa-download me-1"></i>Descargar
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            {% if not tutoriales %}
+            <div class="text-center py-5">
+                <i class="fas fa-graduation-cap fa-4x text-muted mb-3"></i>
+                <h4 class="text-muted">No hay tutoriales disponibles</h4>
+                <p class="text-muted">Los tutoriales se agregarán próximamente.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="text-center mt-3">
+            <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Volver al Menú Principal
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

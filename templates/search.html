@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="search-box">
+            <h2 class="text-center mb-4">Búsqueda de Producto</h2>
+            
+            <form id="searchForm">
+                <div class="input-group mb-3">
+                    <input type="text" id="productCode" class="form-control form-control-lg" 
+                           placeholder="Ingrese código de fábrica o código de venta" 
+                           aria-label="Código del producto">
+                    <button class="btn btn-outline-secondary" type="button" onclick="clearSearch('productCode')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-custom btn-lg">
+                        <i class="fas fa-search me-2"></i>Buscar Producto
+                    </button>
+                </div>
+            </form>
+
+            <div id="result" class="mt-4" style="display: none;">
+                <!-- Resultados se muestran aquí -->
+            </div>
+        </div>
+
+        <div class="text-center mt-3">
+            <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Volver al Menú Principal
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Control de placeholder
+let searchPlaceholderShown = true;
+
+document.getElementById('productCode').addEventListener('focus', function() {
+    if (searchPlaceholderShown) {
+        this.removeAttribute('placeholder');
+        searchPlaceholderShown = false;
+    }
+});
+
+document.getElementById('productCode').addEventListener('blur', function() {
+    if (this.value === '' && !searchPlaceholderShown) {
+        this.setAttribute('placeholder', 'Ingrese código de fábrica o código de venta');
+        searchPlaceholderShown = true;
+    }
+});
+
+document.getElementById('searchForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const code = document.getElementById('productCode').value.trim();
+    
+    if (!code) {
+        showNotification('Por favor ingrese un código', 'warning');
+        return;
+    }
+
+    fetch('/api/search_product', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ code: code })
+    })
+    .then(response => response.json())
+    .then(data => {
+        const resultDiv = document.getElementById('result');
+        if (data.success) {
+            const product = data.product;
+            resultDiv.innerHTML = `
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title">Producto Encontrado</h4>
+                        <div class="row align-items-center">
+                            <div class="col-md-6">
+                                <p><strong>Código Fábrica:</strong> ${product.cod_fabrica || 'N/A'}</p>
+                                <p><strong>Código Venta:</strong> ${product.cod_venta || 'N/A'}</p>
+                                <p><strong>Descripción:</strong> ${product.descripcion || 'N/A'}</p>
+                                <p><strong>Precio:</strong> $${product.precio || 'N/A'}</p>
+                            </div>
+                            <div class="col-md-6 text-center">
+                                ${data.image ? 
+                                    `<img src="${data.image}" alt="${product.descripcion}" class="product-image img-fluid mobile-image">` :
+                                    '<div class="alert alert-warning">Imagen no disponible</div>'
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else {
+            resultDiv.innerHTML = `
+                <div class="alert alert-danger">
+                    <h5>Producto No Encontrado</h5>
+                    <p>${data.message}</p>
+                </div>
+            `;
+        }
+        resultDiv.style.display = 'block';
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Error en la búsqueda', 'error');
+    });
+});
+
+function clearSearch(inputId) {
+    const input = document.getElementById(inputId);
+    input.value = '';
+    input.focus();
+    
+    // Restaurar placeholder si está vacío
+    if (input.value === '') {
+        input.setAttribute('placeholder', 'Ingrese código de fábrica o código de venta');
+        searchPlaceholderShown = true;
+    }
+}
+</script>
+{% endblock %}
