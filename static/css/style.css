@@ -1,9 +1,10 @@
 :root {
-    --primary-color: #2c3e50;
-    --secondary-color: #3498db;
-    --accent-color: #e74c3c;
-    --background-color: #ecf0f1;
-    --text-color: #2c3e50;
+    --primary-color: #d2a266;
+    --secondary-color: #d2a266;
+    --accent-color: #f5efef;
+    --background-color: #d2a266;
+    --text-color: rgb(219, 167, 104);
+    /* #2c3e50; */
 }
 
 body {
@@ -20,6 +21,7 @@ body {
 .navbar-brand,
 .nav-link {
     color: white !important;
+    /* color: white !important;  #947f56 */
     font-weight: 600;
 }
 
@@ -53,7 +55,7 @@ body {
 
 .btn-custom:hover {
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 5px 15px rgba(174, 131, 13, 0.2);
 }
 
 .search-box {
@@ -127,7 +129,7 @@ body {
 }
 
 /* Mejorar la legibilidad en móviles */
-@media (max-width: 576px) {
+@media (max-width: 400px) {
     .btn-lg {
         padding: 0.75rem 1.5rem;
         font-size: 1rem;
@@ -178,9 +180,10 @@ body {
 #bazarDetails {
     transition: all 0.3s ease-in-out;
 }
+
 /* Estilos para el Dashboard */
 .border-left-primary {
-    border-left: 0.25rem solid #4e73df !important;
+    border-left: 0.25rem solid #76685d !important;
 }
 
 .border-left-success {
@@ -222,11 +225,12 @@ body {
     .card-body .h5 {
         font-size: 1.1rem;
     }
-    
+
     .table-responsive {
         font-size: 0.875rem;
     }
 }
+
 /* Estilos para los filtros de reportes */
 #reportFilterForm .form-label {
     font-weight: 600;
@@ -238,15 +242,15 @@ body {
     .table-responsive {
         font-size: 0.8rem;
     }
-    
+
     .card-body .h5 {
         font-size: 1rem;
     }
-    
+
     #reportFilterForm .row {
         margin-bottom: 0.5rem;
     }
-    
+
     #reportFilterForm .col-md-3 {
         margin-bottom: 1rem;
     }
@@ -276,4 +280,93 @@ body {
 
 .card.bg-light .text-warning {
     color: #f6c23e !important;
+}
+
+/* =============================================================================
+   COLORES PERSONALIZADOS - TONOS MARRONES
+   ============================================================================= */
+
+/* Color marrón principal para iconos */
+.icon-brown {
+    color: #8B4513 !important;
+    /* Marrón silla de montar */
+}
+
+.icon-brown-light {
+    color: #A0522D !important;
+    /* Marrón tierra */
+}
+
+.icon-brown-dark {
+    color: #654321 !important;
+    /* Marrón oscuro */
+}
+
+/* Sobrescribir colores de Bootstrap para iconos específicos */
+.fa-search {
+    color: #8B4513 !important;
+}
+
+.fa-cash-register {
+    color: #8B4513 !important;
+}
+
+.fa-calendar-alt {
+    color: #8B4513 !important;
+}
+
+.fa-map-marker-alt {
+    color: #8B4513 !important;
+}
+
+.fa-graduation-cap {
+    color: #8B4513 !important;
+}
+
+.fa-info-circle {
+    color: #8B4513 !important;
+}
+
+.fa-tools {
+    color: #8B4513 !important;
+}
+
+/* También puedes aplicar a otros elementos si quieres */
+.btn-custom {
+    background: linear-gradient(135deg, #8B4513, #A0522D) !important;
+    border: none;
+}
+
+.navbar-custom {
+    background: linear-gradient(135deg, #8B4513, #A0522D) !important;
+}
+
+/* Hover effects para iconos */
+.fa-search:hover,
+.fa-cash-register:hover,
+.fa-calendar-alt:hover,
+.fa-map-marker-alt:hover,
+.fa-graduation-cap:hover,
+.fa-info-circle:hover,
+.fa-tools:hover {
+    color: #654321 !important;
+    transition: color 0.3s ease;
+}
+/* Botón con borde marrón y texto marrón */
+.btn-brown-outline {
+  color: #6f4e37;               /* Marrón café suave */
+  border-color: #6f4e37;
+  background-color: transparent;
+}
+
+/* Hover: fondo marrón claro y texto blanco */
+.btn-brown-outline:hover {
+  color: #fff;
+  background-color: #8b5e3c;   /* Marrón un poco más oscuro */
+  border-color: #8b5e3c;
+}
+
+/* Focus (accesibilidad) */
+.btn-brown-outline:focus {
+  box-shadow: 0 0 0 0.25rem rgba(139, 94, 60, 0.25);
 }
