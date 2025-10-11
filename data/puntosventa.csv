@@ -1,6 +1,10 @@
-nombrepunto;tipo;direccion;comuna;fech_inicio;fech_termino;hora_sem;hora_vie;hora_sab;hora_dom
-Vivo Los Trapenses;propio;Lo Barneches;Lo Barneches;05-11-25;08-11-25;11:00 a 22:00;11:00 a 23:00;11:00 a 23:00;11:00 a 20:00
-EU La Dehesa;propio;Cachagua;Lo Barneches;23-01-26;26-01-26;11:00 a 22:00;11:00 a 23:00;11:00 a 23:00;11:00 a 20:00
-Patio Santa Teresa;propio;Jumbo Rancagua;Santo Domingo;13-11-25;01-12-25;10:00 a 20:30;10:00 a 21:01;10:00 a 21:00;10:00 a 20:30
-Campera;concept;Subercaseaux 1010;Pirque;;;10:00 a 20:31;10:00 a 21:01;10:00 a 21:00;10:00 a 20:31
-Tienda de Linderos;concept;Strip Center;Buin;;;10:00 a 20:32;10:00 a 21:01;10:00 a 21:00;10:00 a 20:32
+nombrepunto;tipo;direccion;comuna;lunes;martes;miercoles;jueves;viernes;sabado;domingo
+Vivo Los Trapenses;Propio;Av. José Alcalde Délano N°10.492, esquina Los Trapenses;Lo Barnechea;10:00 - 20:00;10:00 - 20:00;10:00 - 20:00;10:00 - 20:00;10:00 - 20:00;10:00 - 20:00;10:00 - 20:00
+EU La Dehesa;Propio;El Rodeo 12850;Lo Barnechea;10:00 - 20:00;10:00 - 20:00;10:00 - 20:00;10:00 - 20:00;10:00 - 20:00;10:00 - 20:00;10:00 - 20:00
+Patio Santa Teresa;Propio;Av. Santa Teresa 108;Santo Domingo;Cerrado;11:00 - 19:00;11:00 - 19:00;11:00 - 19:00;11:00 - 19:00;11:00 - 19:00;11:00 - 14:00
+Campera;Concept;Subercaseaux 1010;Pirque;10:00 a 20:00;10:00 a 20:00;10:00 a 20:00;10:00 a 20:00;10:00 a 20:00;10:00 - 18:30;Cerrado
+Tienda de Linderos;Concept;Strip Center de Linderos;Buin;10:30 -19:30;10:30 -19:30;10:30 -19:30;10:30 -19:30;10:30 -19:30;10:30 -19:30;Cerrado
+Casa Dominicos;Concept;Av. La Plaza 651;Las Condes;10:30 -19:30;10:30 -19:30;10:30 -19:30;10:30 -19:30;10:30 -19:30;11:00 - 17:00;Cerrado
+Aldea Concept;Concept;Av. San Juan 1157, Local 11;Machalí;11:00 - 19:00;11:00 - 20:00;11:00 - 20:00;11:00 - 20:00;11:00 - 20:00;11:00 - 20:00;11:00 - 20:00
+Mil Estilos;Concept;Av. San Juan 133, Local C;Machalí;10:30 - 19:30;10:30 - 19:30;10:30 - 19:30;10:30 - 19:30;10:30 - 19:30;10:30 - 19:30;11:00 - 19:30
+Casa Ambienta;Concept;Santa Blanca 1969, Local 2;Lo Barnechea;10:00 a 20:00;10:00 a 20:00;10:00 a 20:00;10:00 a 20:00;10:00 a 20:00;10:00 - 14:00;Cerrado
