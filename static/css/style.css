@@ -1,16 +1,25 @@
 :root {
-    --primary-color: #d2a266;
-    --secondary-color: #d2a266;
-    --accent-color: #f5efef;
-    --background-color: #d2a266;
-    --text-color: rgb(219, 167, 104);
-    /* #2c3e50; */
+    --primary-color: #5f2e0a;
+    /* Marrón silla de montar */
+    --secondary-color: #5f2e0a;
+    /* Marrón tierra secondary color A0522D */
+    --accent-color: #dec290;
+    /* Beige claro para fondos */
+    --background-color: #d1b684;
+    /* Beige muy claro para el fondo */
+    --text-color: #5D4037;
+    /* Marrón oscuro para texto principal */
+    --text-light: #8D6E63;
+    /* Marrón medio para texto secundario text light 8D6E63 */
+    --white: #FFFFFF;
+    --card-bg: #f9e7c8;
 }
 
 body {
     background-color: var(--background-color);
     color: var(--text-color);
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
 }
 
 .navbar-custom {
@@ -20,8 +29,7 @@ body {
 
 .navbar-brand,
 .nav-link {
-    color: white !important;
-    /* color: white !important;  #947f56 */
+    color: var(--white) !important;
     font-weight: 600;
 }
 
@@ -29,7 +37,7 @@ body {
     border: none;
     border-radius: 15px;
     transition: all 0.3s ease;
-    background: white;
+    background: var(--card-bg);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
@@ -38,9 +46,18 @@ body {
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
 }
 
+.menu-card .card-title {
+    color: var(--text-color);
+    font-weight: 600;
+}
+
+.menu-card .card-text {
+    color: var(--text-light);
+}
+
 .footer {
     background-color: var(--primary-color);
-    color: white;
+    color: var(--white);
 }
 
 .btn-custom {
@@ -48,18 +65,19 @@ body {
     border: none;
     border-radius: 25px;
     padding: 10px 25px;
-    color: white;
+    color: var(--white);
     font-weight: 600;
     transition: all 0.3s ease;
 }
 
 .btn-custom:hover {
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(174, 131, 13, 0.2);
+    box-shadow: 0 5px 15px rgba(135, 97, 71, 0.3);
+    color: var(--white);
 }
 
 .search-box {
-    background: white;
+    background: var(--card-bg);
     border-radius: 15px;
     padding: 2rem;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
@@ -73,10 +91,104 @@ body {
 }
 
 .table-custom {
-    background: white;
+    background: var(--card-bg);
     border-radius: 10px;
     overflow: hidden;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.table-custom th {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: var(--white);
+    font-weight: 600;
+}
+
+/* COLORES PERSONALIZADOS PARA TEXTO */
+.text-brown-primary {
+    color: var(--primary-color) !important;
+}
+
+.text-brown-secondary {
+    color: var(--secondary-color) !important;
+}
+
+.text-brown-dark {
+    color: var(--text-color) !important;
+}
+
+.text-brown-light {
+    color: var(--text-light) !important;
+}
+
+.text-beige {
+    color: var(--accent-color) !important;
+}
+
+/* Colores para iconos específicos */
+.fa-search {
+    color: var(--primary-color) !important;
+}
+
+.fa-cash-register {
+    color: #5f2e0a !important;
+}
+
+/* Verde para ventas */
+.fa-calendar-alt {
+    color: #5f2e0a !important;
+}
+
+/* Naranja para eventos */
+.fa-map-marker-alt {
+    color: #5f2e0a !important;
+}
+
+/* Rojo para ubicaciones */
+.fa-graduation-cap {
+    color: #5f2e0a !important;
+}
+
+/* Azul para tutoriales */
+.fa-info-circle {
+    color: #5f2e0a !important;
+}
+
+/* Púrpura para información */
+.fa-tools {
+    color: var(--text-light) !important;
+}
+
+/* Marrón claro para otros */
+
+/* Hover effects para iconos */
+.menu-card:hover .fa-search,
+.menu-card:hover .fa-cash-register,
+.menu-card:hover .fa-calendar-alt,
+.menu-card:hover .fa-map-marker-alt,
+.menu-card:hover .fa-graduation-cap,
+.menu-card:hover .fa-info-circle,
+.menu-card:hover .fa-tools {
+    transform: scale(1.1);
+    transition: all 0.3s ease;
+}
+
+/* Botón con borde marrón y texto marrón */
+.btn-brown-outline {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+    background-color: transparent;
+}
+
+/* Hover: fondo marrón claro y texto blanco */
+.btn-brown-outline:hover {
+    color: var(--white);
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+/* Focus (accesibilidad) */
+.btn-brown-outline:focus {
+    box-shadow: 0 0 0 0.25rem rgba(139, 69, 19, 0.25);
 }
 
 /* Responsive adjustments */
@@ -144,7 +256,7 @@ body {
 /* Estilos para las tarjetas de detalles */
 .card-header {
     background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-    color: white;
+    color: var(--white);
     font-weight: 600;
 }
 
@@ -156,7 +268,7 @@ body {
 
 .form-select:focus {
     border-color: var(--secondary-color);
-    box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+    box-shadow: 0 0 0 0.2rem rgba(160, 82, 45, 0.25);
 }
 
 /* Asegurar buen aspecto en móviles */
@@ -183,7 +295,7 @@ body {
 
 /* Estilos para el Dashboard */
 .border-left-primary {
-    border-left: 0.25rem solid #76685d !important;
+    border-left: 0.25rem solid var(--primary-color) !important;
 }
 
 .border-left-success {
@@ -203,7 +315,7 @@ body {
 }
 
 .text-gray-800 {
-    color: #5a5c69 !important;
+    color: var(--text-color) !important;
 }
 
 .text-gray-300 {
@@ -235,6 +347,7 @@ body {
 #reportFilterForm .form-label {
     font-weight: 600;
     margin-bottom: 0.5rem;
+    color: var(--text-color);
 }
 
 /* Mejoras para tablas responsive */
@@ -264,10 +377,11 @@ body {
 /* Mejoras visuales para las tarjetas de resumen */
 .card.bg-light {
     border: 1px solid #e3e6f0;
+    background-color: var(--accent-color) !important;
 }
 
 .card.bg-light .text-primary {
-    color: #4e73df !important;
+    color: var(--primary-color) !important;
 }
 
 .card.bg-light .text-success {
@@ -282,91 +396,72 @@ body {
     color: #f6c23e !important;
 }
 
-/* =============================================================================
-   COLORES PERSONALIZADOS - TONOS MARRONES
-   ============================================================================= */
+/* Agregar esto en tu archivo style.css */
 
-/* Color marrón principal para iconos */
-.icon-brown {
+/* COLORES MARRÓN PARA TEXTO */
+.text-brown-primary {
     color: #8B4513 !important;
-    /* Marrón silla de montar */
 }
 
-.icon-brown-light {
+/* Marrón silla de montar */
+.text-brown-light {
     color: #A0522D !important;
-    /* Marrón tierra */
 }
 
-.icon-brown-dark {
-    color: #654321 !important;
-    /* Marrón oscuro */
-}
+/* Marrón tierra para texto secundario */
 
-/* Sobrescribir colores de Bootstrap para iconos específicos */
-.fa-search {
-    color: #8B4513 !important;
-}
-
-.fa-cash-register {
-    color: #8B4513 !important;
-}
-
-.fa-calendar-alt {
-    color: #8B4513 !important;
-}
-
-.fa-map-marker-alt {
-    color: #8B4513 !important;
-}
-
-.fa-graduation-cap {
-    color: #8B4513 !important;
-}
-
-.fa-info-circle {
-    color: #8B4513 !important;
-}
-
+/* Asegurar que todos los íconos sean marrón silla de montar */
+.fa-search,
+.fa-cash-register,
+.fa-calendar-alt,
+.fa-map-marker-alt,
+.fa-graduation-cap,
+.fa-info-circle,
 .fa-tools {
     color: #8B4513 !important;
 }
 
-/* También puedes aplicar a otros elementos si quieres */
-.btn-custom {
-    background: linear-gradient(135deg, #8B4513, #A0522D) !important;
-    border: none;
-}
-
-.navbar-custom {
-    background: linear-gradient(135deg, #8B4513, #A0522D) !important;
-}
-
-/* Hover effects para iconos */
-.fa-search:hover,
-.fa-cash-register:hover,
-.fa-calendar-alt:hover,
-.fa-map-marker-alt:hover,
-.fa-graduation-cap:hover,
-.fa-info-circle:hover,
-.fa-tools:hover {
+/* Opcional: mantener el efecto hover si lo deseas */
+.menu-card:hover .fa-search,
+.menu-card:hover .fa-cash-register,
+.menu-card:hover .fa-calendar-alt,
+.menu-card:hover .fa-map-marker-alt,
+.menu-card:hover .fa-graduation-cap,
+.menu-card:hover .fa-info-circle,
+.menu-card:hover .fa-tools {
     color: #654321 !important;
+    /* Marrón más oscuro en hover */
     transition: color 0.3s ease;
 }
-/* Botón con borde marrón y texto marrón */
-.btn-brown-outline {
-  color: #6f4e37;               /* Marrón café suave */
-  border-color: #6f4e37;
-  background-color: transparent;
+
+/* =============================================================================
+   ESTILOS ADICIONALES PARA ELEMENTOS MARRONES - AGREGAR AL FINAL
+   ============================================================================= */
+
+.border-brown {
+    border-color: var(--primary-color) !important;
 }
 
-/* Hover: fondo marrón claro y texto blanco */
-.btn-brown-outline:hover {
-  color: #fff;
-  background-color: #8b5e3c;   /* Marrón un poco más oscuro */
-  border-color: #8b5e3c;
+.input-group-brown .form-control {
+    border-color: var(--primary-color);
 }
 
-/* Focus (accesibilidad) */
-.btn-brown-outline:focus {
-  box-shadow: 0 0 0 0.25rem rgba(139, 94, 60, 0.25);
+.input-group-brown .form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(95, 46, 10, 0.25);
+}
+
+.bg-brown {
+    background-color: var(--primary-color) !important;
+    color: white !important;
+}
+
+.input-group-text.bg-brown {
+    border-color: var(--primary-color);
+}
+
+/* Mejora para el dropdown */
+.form-select.border-brown:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(95, 46, 10, 0.25);
 }

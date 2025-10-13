@@ -96,39 +96,11 @@ def search():
 def api_search_product():
     code = request.json.get('code', '').strip().upper()
     
-    # Si el código tiene 5 caracteres y no empieza con BI, intentar agregar BI6
-    if len(code) == 5 and not code.startswith('BI'):
-        potential_code = 'BI6' + code
-        # Primero buscar con el código completo
-        productos = load_csv('productos.csv')
-        product = None
-        for p in productos:
-            if p.get('cod_venta', '') == potential_code:
-                product = p
-                code = potential_code  # Actualizar el código para usar el completo
-                break
-        
-        if product:
-            # Verificar existencia de imagen
-            cod_fabrica = product.get('cod_fabrica', '')
-            image_path = None
-            for ext in ['.jpg', '.jpeg', '.png']:
-                potential_path = os.path.join(PHOTOS_DIR, f"{cod_fabrica}{ext}")
-                if os.path.exists(potential_path):
-                    image_path = f"/static/fotos/{cod_fabrica}{ext}"
-                    break
-            
-            return jsonify({
-                'success': True,
-                'product': product,
-                'image': image_path
-            })
-    
-    # Validar formato del código (código original o el completo después de la transformación)
+    # Validar formato del código
     if not (validate_factory_code(code, app_config) or validate_sales_code(code, app_config)):
         return jsonify({
             'success': False,
-            'message': 'Formato de código inválido. Use código fábrica (3-8 caracteres) o los últimos 5 dígitos del código venta'
+            'message': 'Formato de código inválido. Use código fábrica (3-8 caracteres) o código venta (BINNNNCC)'
         })
     
     productos = load_csv('productos.csv')
@@ -160,7 +132,6 @@ def api_search_product():
             'success': False,
             'message': 'Producto no encontrado'
         })
-
 @app.route('/sales')
 def sales():
     telefonos = load_csv('telefonos.csv')

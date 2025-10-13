@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="text-center mb-5">
+            <h1 class="display-4 fw-bold text-indigo mb-3">Sistema de Ventas</h1>
+            <p class="lead text-light-blue">Gestión integral de productos y puntos de venta</p>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-12 col-sm-6">
+                <a href="{{ url_for('search') }}" class="card menu-card h-100 text-decoration-none">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-search fa-3x mb-3 text-teal"></i>
+                        <h5 class="card-title text-dark-blue">Búsqueda de Producto</h5>
+                        <p class="card-text text-gray small">Buscar productos por código</p>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-12 col-sm-6">
+                <a href="{{ url_for('sales') }}" class="card menu-card h-100 text-decoration-none">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-cash-register fa-3x mb-3 text-emerald"></i>
+                        <h5 class="card-title text-dark-blue">Ingreso de Ventas</h5>
+                        <p class="card-text text-gray small">Registrar nuevas ventas</p>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-12 col-sm-6">
+                <a href="{{ url_for('events') }}" class="card menu-card h-100 text-decoration-none">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-calendar-alt fa-3x mb-3 text-amber"></i>
+                        <h5 class="card-title text-dark-blue">Agenda de Eventos</h5>
+                        <p class="card-text text-gray small">Puntos de venta programados</p>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-12 col-sm-6">
+                <a href="{{ url_for('points') }}" class="card menu-card h-100 text-decoration-none">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-map-marker-alt fa-3x mb-3 text-coral"></i>
+                        <h5 class="card-title text-dark-blue">Puntos de Venta</h5>
+                        <p class="card-text text-gray small">Locaciones de bazares</p>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-12 col-sm-6">
+                <a href="{{ url_for('tutorials') }}" class="card menu-card h-100 text-decoration-none">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-graduation-cap fa-3x mb-3 text-sky"></i>
+                        <h5 class="card-title text-dark-blue">Tutoriales de Venta</h5>
+                        <p class="card-text text-gray small">Material de capacitación</p>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-12 col-sm-6">
+                <a href="{{ url_for('info') }}" class="card menu-card h-100 text-decoration-none">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-info-circle fa-3x mb-3 text-slate"></i>
+                        <h5 class="card-title text-dark-blue">Informaciones</h5>
+                        <p class="card-text text-gray small">Datos internos</p>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-12 col-sm-6 mx-auto">
+                <a href="{{ url_for('under_construction') }}" class="card menu-card h-100 text-decoration-none">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-tools fa-3x mb-3 text-light-gray"></i>
+                        <h5 class="card-title text-dark-blue">Otros</h5>
+                        <p class="card-text text-gray small">En desarrollo</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+:root {
+    --indigo: #4f46e5;
+    --light-blue: #60a5fa;
+    --dark-blue: #1e293b;
+    --teal: #0d9488;
+    --emerald: #10b981;
+    --amber: #f59e0b;
+    --coral: #f97316;
+    --sky: #0ea5e9;
+    --slate: #64748b;
+    --gray: #6b7280;
+    --light-gray: #9ca3af;
+}
+
+.text-indigo { color: var(--indigo) !important; }
+.text-light-blue { color: var(--light-blue) !important; }
+.text-dark-blue { color: var(--dark-blue) !important; }
+.text-teal { color: var(--teal) !important; }
+.text-emerald { color: var(--emerald) !important; }
+.text-amber { color: var(--amber) !important; }
+.text-coral { color: var(--coral) !important; }
+.text-sky { color: var(--sky) !important; }
+.text-slate { color: var(--slate) !important; }
+.text-gray { color: var(--gray) !important; }
+.text-light-gray { color: var(--light-gray) !important; }
+</style>
+{% endblock %}

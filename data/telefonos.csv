@@ -1,13 +1,20 @@
 lugar;nombre;tipo;allow
-EU La Dehesa;Karina;propio;
-Vivo Los Trapenses;Paz;propio;
-Patio Santa Teresa;Maria JosŽ;propio;
-Bazar VLT;Gina;productora;
-Bazar ROM (rcgua outlet);Ale;productora;
-Bazar Cenco Rancagua;Ale;productora;
-Bazar Cenco La Dhesa;Gina;productora;
-Bazar Paseo Los Domincos;Gina;productora;
-CM 1 Marcia;Marcia;propio;A
-CM 2 Ceci;Ceci;propio;A
-CM3 Jesu;Jesu;propio;A
-CM4 Mario;Mario;propio;A
+A01-Vivo Los Trapenses-Paz;Paz;propio;
+A01-Vivo Los Trapenses-Gina;Gina;propio;
+A01-Vivo Los Trapenses_Vende;Vendedora_01;propio;
+A02-EU La Dehesa-Karina;Karina;propio;
+A02-EU La Dehesa-Gina;Gina;propio;
+A03-Patio Santa Teresa-MaríaJ;Maria José;propio;
+A04-Bazar Cenco La Dhesa-Gina;Gina;productora;
+A04-Bazar Cenco La Dhesa;Vendedora_02;productora;
+A05-Bazar Cenco Rancagua;Ale;productora;
+A06-Bazar Cenco Rancagua;Ale;productora;
+A07-Bazar Cenco La Dhesa;Marcela;productora;
+A08-Bazar ROM (Rcgua Outlet);Ale;productora;
+A09-Bazar ROM (Rcgua Outlet);Marcela;productora;
+A10-Bazar Paseo Los Domincos;Gina;productora;
+A11-Bazar Zapallar;Ale;productora;
+B01-Vende Marcia;Marcia;propio;
+B02-Vende Ceci;Ceci;propio;A
+B03-Vende Jesu;Jesu;propio;A
+B04-Vende Mario;Mario;propio;A

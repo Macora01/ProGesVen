@@ -10,7 +10,7 @@
                 <h4>Paso 1: Seleccione el lugar de venta</h4>
                 {% if lugares %}
                 <div class="mb-3">
-                    <select id="locationSelect" class="form-select form-select-lg border-brown">
+                    <select id="locationSelect" class="form-select form-select-lg">
                         <option value="" selected disabled>-- Seleccione un lugar --</option>
                         {% for lugar in lugares %}
                         <option value="{{ lugar }}">{{ lugar }}</option>
@@ -31,32 +31,29 @@
 
             <div id="step2" style="display: none;">
                 <h4>Paso 2: Ingrese los productos vendidos</h4>
-                <p><strong>Lugar seleccionado:</strong> <span id="selectedLocation" class="fw-bold text-brown-primary"></span></p>
+                <p><strong>Lugar seleccionado:</strong> <span id="selectedLocation" class="fw-bold text-primary"></span></p>
                 
                 <!-- Información del producto en tiempo real -->
                 <div id="productPreview" class="card mb-3" style="display: none;">
                     <div class="card-body">
-                        <h5 class="card-title text-brown-primary">Producto Detectado</h5>
+                        <h5 class="card-title">Producto Detectado</h5>
                         <div id="productPreviewContent"></div>
                     </div>
                 </div>
 
                 <form id="saleForm">
                     <div class="mb-3">
-                        <label for="productCodeSale" class="form-label text-brown-dark">Código del Producto:</label>
-                        <div class="input-group input-group-brown">
-                            <span class="input-group-text bg-brown text-white">BI6</span>
-                            <input type="text" id="productCodeSale" class="form-control border-brown" 
-                                   placeholder="Ingrese últimos 5 dígitos (NNNCC)" 
-                                   aria-label="Código del producto"
-                                   maxlength="5"
-                                   pattern="[0-9A-Za-z]{5}">
-                            <button class="btn btn-brown-outline" type="button" 
+                        <label for="productCodeSale" class="form-label">Código del Producto:</label>
+                        <div class="input-group">
+                            <input type="text" id="productCodeSale" class="form-control" 
+                                   placeholder="Ingrese código de fábrica o venta" 
+                                   aria-label="Código del producto">
+                            <button class="btn btn-outline-secondary" type="button" 
                                     onclick="clearSaleSearch()">
                                 <i class="fas fa-times"></i> Limpiar
                             </button>
                         </div>
-                        <div class="form-text text-brown-light">Ingrese solo los últimos 5 dígitos del código (ej: 500BL para BI6500BL)</div>
+                        <div class="form-text">Puede ingresar código de fábrica (3-8 caracteres) o código de venta (BINNNNCC)</div>
                     </div>
                     <div class="d-grid gap-2">
                         <button type="submit" class="btn btn-custom" id="submitSaleBtn" disabled>
@@ -67,15 +64,15 @@
 
                 <!-- Lista de ventas en tiempo real -->
                 <div id="currentSales" class="mt-4">
-                    <h5 class="text-brown-primary">Ventas de esta Sesión</h5>
+                    <h5>Ventas de esta Sesión</h5>
                     <div class="table-responsive">
                         <table class="table table-striped table-sm">
                             <thead>
                                 <tr>
-                                    <th class="text-brown-dark">Código</th>
-                                    <th class="text-brown-dark">Descripción</th>
-                                    <th class="text-brown-dark">Precio</th>
-                                    <th class="text-brown-dark">Acción</th>
+                                    <th>Código</th>
+                                    <th>Descripción</th>
+                                    <th>Precio</th>
+                                    <th>Acción</th>
                                 </tr>
                             </thead>
                             <tbody id="salesTableBody">
@@ -83,9 +80,9 @@
                             </tbody>
                             <tfoot class="table-group-divider">
                                 <tr>
-                                    <th colspan="2" class="text-end text-brown-dark">Total:</th>
-                                    <th id="totalAmount" class="text-brown-primary">$0</th>
-                                    <th id="totalItems" class="text-brown-light">0 productos</th>
+                                    <th colspan="2" class="text-end">Total:</th>
+                                    <th id="totalAmount">$0</th>
+                                    <th id="totalItems">0 productos</th>
                                 </tr>
                             </tfoot>
                         </table>
@@ -95,32 +92,16 @@
         </div>
 
         <div class="text-center mt-3">
-            <a href="{{ url_for('index') }}" class="btn btn-brown-outline">
+            <button id="backButton" class="btn btn-outline-secondary" style="display: none;" 
+                    onclick="goBackToStep1()">
+                <i class="fas fa-arrow-left me-2"></i>Volver a Selección de Lugar
+            </button>
+             <a href="{{ url_for('index') }}" class="btn btn-brown-outline">
                 <i class="fas fa-arrow-left me-2"></i>Volver al Menú Principal
             </a>
         </div>
     </div>
 </div>
-
-<style>
-/* Estilos adicionales para elementos marrones */
-.border-brown {
-    border-color: var(--primary-color) !important;
-}
-
-.input-group-brown .form-control:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 0.2rem rgba(95, 46, 10, 0.25);
-}
-
-.bg-brown {
-    background-color: var(--primary-color) !important;
-}
-
-.input-group-text {
-    color: white !important;
-}
-</style>
 {% endblock %}
 
 {% block scripts %}
@@ -129,25 +110,6 @@
 let currentLocation = '';
 let currentSales = []; // Array para almacenar ventas de la sesión actual
 let salesPlaceholderShown = true;
-
-// Función para normalizar el código ingresado
-function normalizeProductCode(partialCode) {
-    // Limpiar el código y convertir a mayúsculas
-    const cleanCode = partialCode.trim().toUpperCase();
-    
-    // Si ya empieza con BI, devolver tal cual
-    if (cleanCode.startsWith('BI')) {
-        return cleanCode;
-    }
-    
-    // Si tiene exactamente 5 caracteres, agregar prefijo BI6
-    if (cleanCode.length === 5) {
-        return 'BI6' + cleanCode;
-    }
-    
-    // Para otros casos, devolver el código original
-    return cleanCode;
-}
 
 // Control de placeholder para input de ventas
 document.getElementById('productCodeSale').addEventListener('focus', function() {
@@ -159,19 +121,8 @@ document.getElementById('productCodeSale').addEventListener('focus', function() 
 
 document.getElementById('productCodeSale').addEventListener('blur', function() {
     if (this.value === '' && !salesPlaceholderShown) {
-        this.setAttribute('placeholder', 'Ingrese últimos 5 dígitos (NNNCC)');
+        this.setAttribute('placeholder', 'Ingrese código de fábrica o venta');
         salesPlaceholderShown = true;
-    }
-});
-
-// Validación en tiempo real del input
-document.getElementById('productCodeSale').addEventListener('input', function() {
-    // Convertir a mayúsculas automáticamente
-    this.value = this.value.toUpperCase();
-    
-    // Limitar a 5 caracteres si no empieza con BI
-    if (!this.value.startsWith('BI') && this.value.length > 5) {
-        this.value = this.value.substring(0, 5);
     }
 });
 
@@ -239,6 +190,7 @@ function selectLocation(lugar) {
     document.getElementById('selectedLocation').textContent = lugar;
     document.getElementById('step1').style.display = 'none';
     document.getElementById('step2').style.display = 'block';
+    document.getElementById('backButton').style.display = 'inline-block';
     
     // Actualizar la lista de ventas (vacía)
     updateSalesTable();
@@ -249,15 +201,30 @@ function selectLocation(lugar) {
     }, 100);
 }
 
-function searchProductPreview(code) {
-    const normalizedCode = normalizeProductCode(code);
+function goBackToStep1() {
+    console.log('Volviendo a selección de lugar');
+    currentLocation = '';
+    currentSales = [];
+    document.getElementById('step1').style.display = 'block';
+    document.getElementById('step2').style.display = 'none';
+    document.getElementById('backButton').style.display = 'none';
+    document.getElementById('productCodeSale').value = '';
+    document.getElementById('locationSelect').value = '';
+    hideProductPreview();
     
+    // Restaurar placeholder
+    const input = document.getElementById('productCodeSale');
+    input.setAttribute('placeholder', 'Ingrese código de fábrica o venta');
+    salesPlaceholderShown = true;
+}
+
+function searchProductPreview(code) {
     fetch('/api/search_product', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ code: normalizedCode })
+        body: JSON.stringify({ code: code })
     })
     .then(response => response.json())
     .then(data => {
@@ -267,11 +234,6 @@ function searchProductPreview(code) {
         } else {
             hideProductPreview();
             document.getElementById('submitSaleBtn').disabled = true;
-            
-            // Mostrar mensaje de error solo si el código tiene al menos 3 caracteres
-            if (code.length >= 3) {
-                showNotification('Producto no encontrado. Verifique el código.', 'warning');
-            }
         }
     })
     .catch(error => {
@@ -298,9 +260,9 @@ function showProductPreview(product, imageUrl) {
         <div class="row align-items-center">
             ${imageHtml}
             <div class="${imageUrl ? 'col-md-8' : 'col-12'}">
-                <p class="mb-1 text-brown-dark"><strong>Código:</strong> ${product.cod_venta || product.cod_fabrica}</p>
-                <p class="mb-1 text-brown-dark"><strong>Descripción:</strong> ${product.descripcion}</p>
-                <p class="mb-0 text-brown-primary"><strong>Precio:</strong> $${parseInt(product.precio).toLocaleString('es-CL')}</p>
+                <p class="mb-1"><strong>Código:</strong> ${product.cod_venta || product.cod_fabrica}</p>
+                <p class="mb-1"><strong>Descripción:</strong> ${product.descripcion}</p>
+                <p class="mb-0"><strong>Precio:</strong> $${parseInt(product.precio).toLocaleString('es-CL')}</p>
             </div>
         </div>
     `;
@@ -315,7 +277,6 @@ function hideProductPreview() {
 
 function processSale() {
     const code = document.getElementById('productCodeSale').value.trim();
-    const normalizedCode = normalizeProductCode(code);
     
     // Validaciones
     if (!currentLocation) {
@@ -328,7 +289,7 @@ function processSale() {
         return;
     }
 
-    console.log('Procesando venta:', { lugar: currentLocation, codigo: normalizedCode });
+    console.log('Procesando venta:', { lugar: currentLocation, codigo: code });
 
     // Mostrar loading
     const submitBtn = document.getElementById('submitSaleBtn');
@@ -342,7 +303,7 @@ function processSale() {
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ code: normalizedCode })
+        body: JSON.stringify({ code: code })
     })
     .then(response => response.json())
     .then(searchData => {
@@ -358,7 +319,7 @@ function processSale() {
             },
             body: JSON.stringify({ 
                 lugar: currentLocation,
-                codigo: normalizedCode
+                codigo: code
             })
         }).then(response => response.json()).then(saleData => {
             return { searchData, saleData };
@@ -409,7 +370,7 @@ function updateSalesTable() {
     const totalItems = document.getElementById('totalItems');
     
     if (currentSales.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="4" class="text-center text-brown-light">No hay ventas registradas</td></tr>';
+        tableBody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">No hay ventas registradas</td></tr>';
         totalAmount.textContent = '$0';
         totalItems.textContent = '0 productos';
         return;
@@ -422,11 +383,11 @@ function updateSalesTable() {
     // Actualizar tabla
     tableBody.innerHTML = currentSales.map((sale, index) => `
         <tr>
-            <td class="text-brown-dark">${sale.cod_venta || sale.cod_fabrica}</td>
-            <td class="text-brown-dark">${sale.descripcion}</td>
-            <td class="text-brown-primary">$${sale.precio.toLocaleString('es-CL')}</td>
+            <td>${sale.cod_venta || sale.cod_fabrica}</td>
+            <td>${sale.descripcion}</td>
+            <td>$${sale.precio.toLocaleString('es-CL')}</td>
             <td>
-                <button type="button" class="btn btn-sm btn-brown-outline" onclick="removeSale(${index})">
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeSale(${index})">
                     <i class="fas fa-times"></i>
                 </button>
             </td>
@@ -456,7 +417,7 @@ function clearSaleSearch() {
     
     // Restaurar placeholder si está vacío
     if (input.value === '') {
-        input.setAttribute('placeholder', 'Ingrese últimos 5 dígitos (NNNCC)');
+        input.setAttribute('placeholder', 'Ingrese código de fábrica o venta');
         salesPlaceholderShown = true;
     }
     
