@@ -1,19 +1,22 @@
-FROM python:3.12-slim
+# Usamos una imagen oficial de Python ligera
+FROM python:3.9-slim
 
+# Establecemos el directorio de trabajo dentro del contenedor
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    libpq-dev \
-    gcc \
-    && rm -rf /var/lib/apt/lists/*
-
+# Copiamos el archivo de requisitos primero para aprovechar el caché de Docker
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-RUN pip install gunicorn psycopg2-binary
 
+# Instalamos las dependencias
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copiamos el resto del código de la aplicación al contenedor
 COPY . .
 
-ENV PORT=8000
+# Exponemos el puerto por el que correrá la aplicación Flask
+# Gunicorn se encargará de escuchar en este puerto
+EXPOSE 5000
 
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "2", "app:app"]
+# Usamos Gunicorn como servidor web para producción, es mucho más robusto que el servidor de desarrollo de Flask
+# El comando ejecuta la aplicación definida como 'app' dentro del archivo 'app.py'
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app"]
