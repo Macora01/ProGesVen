@@ -6,16 +6,20 @@
         <div class="search-box">
             <h2 class="text-center mb-4">Agenda de Eventos - Bazares</h2>
             
-            <!-- Dropdown para seleccionar bazar -->
-            <div class="mb-4">
-                <label for="bazarSelect" class="form-label">Seleccione un bazar:</label>
-                <select id="bazarSelect" class="form-select form-select-lg">
-                    <option value="" selected disabled>-- Seleccione un bazar --</option>
+        <!-- Dropdown para seleccionar bazar -->
+        <div class="mb-4">
+            <label for="bazarSelect" class="form-label">Seleccione un bazar:</label>
+            <select id="bazarSelect" class="form-select form-select-lg">
+                <option value="" selected disabled>-- Seleccione un bazar --</option>
+                {% if bazares %}
                     {% for bazar in bazares %}
                     <option value="{{ loop.index0 }}">{{ bazar.nombrepunto }}</option>
                     {% endfor %}
-                </select>
-            </div>
+                {% else %}
+                    <option value="" disabled>-- No hay bazares activos --</option>
+                {% endif %}
+            </select>
+        </div>
 
             <!-- Contenedor para detalles del bazar -->
             <div id="bazarDetails" style="display: none;">

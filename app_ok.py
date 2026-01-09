@@ -234,29 +234,7 @@ def api_record_sale():
 def events():
     # Usar bazares.csv para eventos (con fechas)
     bazares = load_csv('bazares.csv')
-    
-    # Filtrar bazares activos (fecha término >= fecha actual)
-    from datetime import datetime
-    hoy = datetime.now().date()
-    
-    bazares_activos = []
-    for bazar in bazares:
-        try:
-            # Convertir fecha término de formato dd-mm-yy a objeto date
-            fecha_termino_str = bazar.get('fech_termino', '')
-            if fecha_termino_str:
-                fecha_termino = datetime.strptime(fecha_termino_str, '%d-%m-%y').date()
-                # Solo incluir si la fecha de término es mayor o igual a hoy
-                if fecha_termino >= hoy:
-                    bazares_activos.append(bazar)
-        except (ValueError, TypeError) as e:
-            print(f"Error procesando fecha para bazar {bazar.get('nombrepunto', '')}: {e}")
-            # En caso de error, incluir el bazar por seguridad
-            bazares_activos.append(bazar)
-    
-    print(f"Bazares activos encontrados: {len(bazares_activos)} de {len(bazares)} totales")
-    
-    return render_template('events.html', bazares=bazares_activos)
+    return render_template('events.html', bazares=bazares)
 
 @app.route('/api/save_comment_events', methods=['POST'])
 def api_save_comment_events():
@@ -515,8 +493,110 @@ def under_construction():
 # =============================================================================
 # NUEVAS FUNCIONES PARA REPORTES AVANZADOS
 # =============================================================================
+
+def get_sales_data_by_date_range(start_date, end_date):
+    """Obtener datos de ventas para un rango de fechas específico"""
+    total_sales = 0
+    total_amount = 0
+    locations_active = set()
+    daily_data = {}
+    product_sales = {}
+    location_sales = {}
+    
+    # Convertir fechas a objetos datetime si son strings
+    if isinstance(start_date, str):
+        start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+    if isinstance(end_date, str):
+        end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+    
+    current_date = start_date
+    while current_date <= end_date:
+        date_str = current_date.strftime('%Y-%m-%d')
+        daily_sales = 0
+        daily_amount = 0
+        daily_locations = set()
+        
+        # Buscar archivos de ventas de esta fecha
+        for filename in os.listdir(SALES_DIR):
+            if date_str in filename:
+                filepath = os.path.join(SALES_DIR, filename)
+                location = filename.replace(f'_{date_str}.csv', '')
+                daily_locations.add(location)
+                locations_active.add(location)
+                
+                try:
+                    with open(filepath, 'r', encoding=app_config.CSV_ENCODING) as file:
+                        reader = csv.DictReader(file, delimiter=app_config.CSV_DELIMITER)
+                        for row in reader:
+                            total_sales += 1
+                            daily_sales += 1
+                            
+                            # Limpiar y convertir precio
+                            precio = str(row.get('precio', '0')).replace('$', '').replace('.', '').strip()
+                            if precio.isdigit():
+                                amount = int(precio)
+                                total_amount += amount
+                                daily_amount += amount
+                            
+                            # Estadísticas por producto
+                            product_code = row.get('cod_venta') or row.get('cod_fabrica', '')
+                            if product_code:
+                                if product_code in product_sales:
+                                    product_sales[product_code]['count'] += 1
+                                    product_sales[product_code]['amount'] += amount
+                                else:
+                                    # Buscar información del producto
+                                    productos = load_csv('productos.csv', fieldnames=['cod_fabrica', 'cod_venta', 'descripcion', 'precio'])
+                                    product_info = next((p for p in productos if p.get('cod_fabrica') == product_code or p.get('cod_venta') == product_code), {})
+                                    product_sales[product_code] = {
+                                        'count': 1,
+                                        'amount': amount,
+                                        'description': product_info.get('descripcion', 'Producto no encontrado'),
+                                        'price': product_info.get('precio', 0)
+                                    }
+                            
+                            # Estadísticas por ubicación
+                            if location in location_sales:
+                                location_sales[location]['count'] += 1
+                                location_sales[location]['amount'] += amount
+                            else:
+                                location_sales[location] = {
+                                    'count': 1,
+                                    'amount': amount
+                                }
+                                
+                except Exception as e:
+                    print(f"Error procesando {filename}: {e}")
+        
+        daily_data[date_str] = {
+            'sales': daily_sales,
+            'amount': daily_amount,
+            'locations': len(daily_locations)
+        }
+        
+        current_date += timedelta(days=1)
+    
+    # Ordenar productos por cantidad vendida
+    top_products = sorted(product_sales.items(), key=lambda x: x[1]['amount'], reverse=True)[:10]
+    
+    # Ordenar ubicaciones por monto
+    sorted_locations = dict(sorted(location_sales.items(), key=lambda x: x[1]['amount'], reverse=True))
+    
+    return {
+        'total_sales': total_sales,
+        'total_amount': total_amount,
+        'active_locations': len(locations_active),
+        'date_range': {
+            'start': start_date.strftime('%Y-%m-%d'),
+            'end': end_date.strftime('%Y-%m-%d')
+        },
+        'daily_data': daily_data,
+        'top_products': top_products,
+        'location_sales': sorted_locations
+    }
+
 def get_period_data(period):
-    """Obtener datos para períodos predefinidos - Versión corregida"""
+    """Obtener datos para períodos predefinidos"""
     today = datetime.now().date()
     
     if period == 'today':
@@ -537,207 +617,7 @@ def get_period_data(period):
         start_date = today
         end_date = today
     
-    # Usar la misma función que para rangos personalizados
     return get_sales_data_by_date_range(start_date, end_date)
-
-
-
-
-def get_sales_data_by_date_range(start_date, end_date):
-    """Obtener datos de ventas y devoluciones para un rango de fechas específico - Versión mejorada"""
-    total_sales = 0
-    total_returns = 0
-    total_amount = 0
-    locations_active = set()
-    daily_data = {}
-    product_sales = {}
-    location_sales = {}
-    
-    # Convertir fechas a objetos datetime si son strings
-    if isinstance(start_date, str):
-        start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
-    if isinstance(end_date, str):
-        end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
-    
-    # Cargar productos para obtener descripciones
-    productos = load_csv('productos.csv', fieldnames=['cod_fabrica', 'cod_venta', 'descripcion', 'precio'])
-    
-    current_date = start_date
-    while current_date <= end_date:
-        date_str = current_date.strftime('%Y-%m-%d')
-        daily_sales = 0
-        daily_returns = 0
-        daily_amount = 0
-        daily_locations = set()
-        
-        # Procesar archivos de ventas de esta fecha
-        for filename in os.listdir(SALES_DIR):
-            if date_str in filename and not filename.startswith('devoluciones_'):
-                filepath = os.path.join(SALES_DIR, filename)
-                location = filename.replace(f'_{date_str}.csv', '')
-                daily_locations.add(location)
-                locations_active.add(location)
-                
-                try:
-                    with open(filepath, 'r', encoding=app_config.CSV_ENCODING) as file:
-                        reader = csv.DictReader(file, delimiter=app_config.CSV_DELIMITER)
-                        for row in reader:
-                            total_sales += 1
-                            daily_sales += 1
-                            
-                            # Procesar producto
-                            product_code = row.get('cod_venta') or row.get('cod_fabrica', '')
-                            if product_code:
-                                if product_code not in product_sales:
-                                    # Buscar descripción del producto
-                                    descripcion = next((p.get('descripcion', '') for p in productos 
-                                                      if p.get('cod_venta') == product_code or p.get('cod_fabrica') == product_code), product_code)
-                                    product_sales[product_code] = {
-                                        'description': descripcion,
-                                        'sales_count': 0,
-                                        'returns_count': 0,
-                                        'amount': 0
-                                    }
-                                product_sales[product_code]['sales_count'] += 1
-                            
-                            # Procesar ubicación
-                            if location not in location_sales:
-                                location_sales[location] = {
-                                    'sales_count': 0,
-                                    'returns_count': 0,
-                                    'amount': 0
-                                }
-                            location_sales[location]['sales_count'] += 1
-                            
-                            # Procesar monto
-                            precio = str(row.get('precio', '0')).replace('$', '').replace('.', '').strip()
-                            if precio.isdigit():
-                                amount = int(precio)
-                                total_amount += amount
-                                daily_amount += amount
-                                if product_code:
-                                    product_sales[product_code]['amount'] += amount
-                                location_sales[location]['amount'] += amount
-                except Exception as e:
-                    print(f"Error procesando {filename}: {e}")
-        
-        # Procesar archivos de devoluciones de esta fecha
-        returns_filename = f"devoluciones_{date_str}.csv"
-        returns_filepath = os.path.join(SALES_DIR, returns_filename)
-        if os.path.exists(returns_filepath):
-            try:
-                with open(returns_filepath, 'r', encoding=app_config.CSV_ENCODING) as file:
-                    reader = csv.DictReader(file, delimiter=app_config.CSV_DELIMITER)
-                    for row in reader:
-                        total_returns += 1
-                        daily_returns += 1
-                        
-                        # Procesar producto en devolución
-                        product_code = row.get('cod_venta') or row.get('cod_fabrica', '')
-                        location = row.get('lugar', '')
-                        
-                        if product_code:
-                            if product_code not in product_sales:
-                                descripcion = next((p.get('descripcion', '') for p in productos 
-                                                  if p.get('cod_venta') == product_code or p.get('cod_fabrica') == product_code), product_code)
-                                product_sales[product_code] = {
-                                    'description': descripcion,
-                                    'sales_count': 0,
-                                    'returns_count': 0,
-                                    'amount': 0
-                                }
-                            product_sales[product_code]['returns_count'] += 1
-                        
-                        # Procesar ubicación en devolución
-                        if location and location not in location_sales:
-                            location_sales[location] = {
-                                'sales_count': 0,
-                                'returns_count': 0,
-                                'amount': 0
-                            }
-                        if location:
-                            location_sales[location]['returns_count'] += 1
-                        
-                        # Procesar monto de devolución
-                        precio = str(row.get('precio', '0')).replace('$', '').replace('.', '').strip()
-                        if precio.lstrip('-').isdigit():
-                            amount = int(precio)
-                            total_amount += amount
-                            daily_amount += amount
-                            if product_code:
-                                product_sales[product_code]['amount'] += amount
-                            if location:
-                                location_sales[location]['amount'] += amount
-            except Exception as e:
-                print(f"Error procesando {returns_filename}: {e}")
-        
-        daily_data[date_str] = {
-            'sales': daily_sales,
-            'returns': daily_returns,
-            'amount': daily_amount,
-            'locations': len(daily_locations)
-        }
-        
-        current_date += timedelta(days=1)
-    
-    net_sales = total_sales - total_returns
-    
-    # Preparar datos para top productos (ordenar por monto)
-    top_products_all = []
-    for code, info in product_sales.items():
-        net_count = info['sales_count'] - info['returns_count']
-        if net_count > 0 or info['amount'] != 0:  # Solo incluir productos con actividad
-            top_products_all.append([code, {
-                'description': info['description'],
-                'count': net_count,
-                'amount': info['amount']
-            }])
-    
-    # Ordenar por monto (descendente)
-    top_products_all.sort(key=lambda x: x[1]['amount'], reverse=True)
-    top_5_products = top_products_all[:5]
-    top_10_products = top_products_all[:10]
-    
-    # Preparar datos para gráfico de top productos
-    top_products_chart = {
-        'names': [p[1]['description'][:20] + '...' if len(p[1]['description']) > 20 else p[1]['description'] for p in top_5_products],
-        'amounts': [p[1]['amount'] for p in top_5_products]
-    }
-    
-    # Preparar datos para ubicaciones
-    location_sales_clean = {}
-    for location, info in location_sales.items():
-        net_count = info['sales_count'] - info['returns_count']
-        if net_count > 0 or info['amount'] != 0:  # Solo incluir ubicaciones con actividad
-            location_sales_clean[location] = {
-                'count': net_count,
-                'amount': info['amount']
-            }
-    
-    return {
-        'total_sales': total_sales,
-        'total_returns': total_returns,
-        'net_sales': net_sales,
-        'total_amount': total_amount,
-        'active_locations': len(locations_active),
-        'date_range': {
-            'start': start_date.strftime('%Y-%m-%d'),
-            'end': end_date.strftime('%Y-%m-%d')
-        },
-        'daily_data': daily_data,
-        'top_products': top_10_products,  # Para la tabla de top 10
-        'location_sales': location_sales_clean,
-        'chart_data': {
-            'daily_evolution': {
-                'dates': list(daily_data.keys()),
-                'sales': [daily_data[date]['sales'] for date in sorted(daily_data.keys())],
-                'returns': [daily_data[date]['returns'] for date in sorted(daily_data.keys())],
-                'amounts': [daily_data[date]['amount'] for date in sorted(daily_data.keys())]
-            },
-            'top_products': top_products_chart,
-            'top_locations': {'names': [], 'amounts': []}  # Se puede implementar si es necesario
-        }
-    }
 
 # =============================================================================
 # NUEVAS RUTAS PARA REPORTES AVANZADOS
@@ -752,18 +632,12 @@ def api_reports():
     start_date = request.args.get('start_date')
     end_date = request.args.get('end_date')
     
-    print(f"Solicitud de reporte - Periodo: {period}, Start: {start_date}, End: {end_date}")  # Debug
-    
-    if start_date and end_date and period == 'custom':
+    if start_date and end_date:
         # Usar rango personalizado
         data = get_sales_data_by_date_range(start_date, end_date)
     else:
         # Usar período predefinido
         data = get_period_data(period)
-    
-    print(f"Datos devueltos - Ventas: {data.get('total_sales')}, Devoluciones: {data.get('total_returns')}")  # Debug
-    print(f"Top productos: {len(data.get('top_products', []))}")  # Debug
-    print(f"Ubicaciones: {len(data.get('location_sales', {}))}")  # Debug
     
     return jsonify(data)
 

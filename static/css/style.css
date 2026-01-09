@@ -465,3 +465,51 @@ body {
     border-color: var(--primary-color);
     box-shadow: 0 0 0 0.2rem rgba(95, 46, 10, 0.25);
 }
+/* =============================================================================
+   ESTILOS PARA DEVOLUCIONES
+   ============================================================================= */
+
+/* Botón de devolución con color marrón rojizo */
+.btn-return {
+    background-color: #8B4513;
+    border-color: #8B4513;
+    color: white;
+}
+
+.btn-return:hover {
+    background-color: #A0522D;
+    border-color: #A0522D;
+    color: white;
+}
+
+/* Estilos para los botones del grupo de operación */
+.btn-check:checked + .btn-brown-outline {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+}
+
+/* Badges para tipos de transacción */
+.badge-venta {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.badge-devolucion {
+    background-color: #8B4513;
+    color: white;
+}
+
+/* Texto para montos negativos */
+.text-negative {
+    color: #8B4513;
+}
+
+/* Estilos para tipos de transacción en tabla */
+.transaction-venta {
+    border-left: 4px solid var(--primary-color);
+}
+
+.transaction-devolucion {
+    border-left: 4px solid #8B4513;
+}

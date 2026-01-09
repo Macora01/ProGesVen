@@ -374,11 +374,6 @@ function loadDashboardData() {
 function updateDashboard(data) {
     console.log('Datos recibidos:', data); // Para debug
     
-    // Verificar estructura de datos
-    console.log('Top products:', data.top_products);
-    console.log('Location sales:', data.location_sales);
-    console.log('Chart data:', data.chart_data);
-    
     // Actualizar texto del rango de fechas
     const dateRangeText = document.getElementById('dateRangeText');
     if (data.date_range && data.date_range.start === data.date_range.end) {
@@ -422,6 +417,7 @@ function updateDashboard(data) {
         document.getElementById('totalAmount').textContent = '$0';
     }
 }
+
 // Actualizar gráficos
 function updateCharts(chartData) {
     // Destruir gráficos existentes
@@ -528,27 +524,6 @@ function updateTopProductsTable(topProducts) {
             <td class="text-end">${formatCurrency(info.amount)}</td>
         </tr>
     `).join('');
-}
-
-function updateLocationSalesTable(locationSales) {
-    const tableBody = document.getElementById('locationSalesTableBody');
-    const locations = Object.keys(locationSales);
-    
-    if (!locations || locations.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">No hay ventas por ubicación</td></tr>';
-        return;
-    }
-    
-    tableBody.innerHTML = locations.map(location => {
-        const sales = locationSales[location];
-        return `
-            <tr>
-                <td><strong>${location}</strong></td>
-                <td class="text-center">${sales.count}</td>
-                <td class="text-end">${formatCurrency(sales.amount)}</td>
-            </tr>
-        `;
-    }).join('');
 }
 
 function updateLocationSalesTable(locationSales) {

@@ -23,11 +23,11 @@
                         </div>
                         <div class="col-md-3">
                             <h6 class="text-brown-light">Ventas Totales</h6>
-                            <h4 id="dailySalesCount" class="text-brown-primary">0</h4>
+                            <h4 id="dailySalesCount" class="text-success">0</h4>
                         </div>
                         <div class="col-md-3">
                             <h6 class="text-brown-light">Devoluciones</h6>
-                            <h4 id="dailyReturnsCount" class="text-brown-primary">0</h4>
+                            <h4 id="dailyReturnsCount" class="text-danger">0</h4>
                         </div>
                     </div>
                 </div>
@@ -63,12 +63,12 @@
                         <h5 class="card-title text-brown-primary">Tipo de Operación</h5>
                         <div class="btn-group w-100" role="group">
                             <input type="radio" class="btn-check" name="operationType" id="saleType" checked>
-                            <label class="btn btn-brown-outline" for="saleType">
+                            <label class="btn btn-outline-success" for="saleType">
                                 <i class="fas fa-shopping-cart me-2"></i>Venta
                             </label>
                             
                             <input type="radio" class="btn-check" name="operationType" id="returnType">
-                            <label class="btn btn-brown-outline" for="returnType">
+                            <label class="btn btn-outline-danger" for="returnType">
                                 <i class="fas fa-undo me-2"></i>Devolución
                             </label>
                         </div>
@@ -114,10 +114,10 @@
                     </div>
                     
                     <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-custom" id="submitSaleBtn" disabled>
+                        <button type="submit" class="btn btn-success" id="submitSaleBtn" disabled>
                             <i class="fas fa-save me-2"></i>Registrar Venta
                         </button>
-                        <button type="submit" class="btn btn-return" id="submitReturnBtn" style="display: none;" disabled>
+                        <button type="submit" class="btn btn-danger" id="submitReturnBtn" style="display: none;" disabled>
                             <i class="fas fa-undo me-2"></i>Procesar Devolución
                         </button>
                     </div>
@@ -155,49 +155,30 @@
 </div>
 
 <style>
+.border-brown {
+    border-color: var(--primary-color) !important;
+}
+
+.input-group-brown .form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(95, 46, 10, 0.25);
+}
+
+.bg-brown {
+    background-color: var(--primary-color) !important;
+}
+
+.input-group-text {
+    color: white !important;
+}
+
 /* Estilos para tipos de transacción */
 .transaction-venta {
-    border-left: 4px solid var(--primary-color);
+    border-left: 4px solid #28a745;
 }
 
 .transaction-devolucion {
-    border-left: 4px solid #8B4513;
-}
-
-/* Botón de devolución con color marrón rojizo */
-.btn-return {
-    background-color: #8B4513;
-    border-color: #8B4513;
-    color: white;
-}
-
-.btn-return:hover {
-    background-color: #A0522D;
-    border-color: #A0522D;
-    color: white;
-}
-
-/* Estilos para los botones del grupo de operación */
-.btn-check:checked + .btn-brown-outline {
-    background-color: var(--primary-color);
-    border-color: var(--primary-color);
-    color: white;
-}
-
-/* Badges para tipos de transacción */
-.badge-venta {
-    background-color: var(--primary-color);
-    color: white;
-}
-
-.badge-devolucion {
-    background-color: #8B4513;
-    color: white;
-}
-
-/* Texto para montos negativos */
-.text-negative {
-    color: #8B4513;
+    border-left: 4px solid #dc3545;
 }
 </style>
 {% endblock %}
@@ -225,7 +206,7 @@ function normalizeProductCode(partialCode) {
 
 // Función para cargar el resumen completo del día
 function loadDailySummary(lugar) {
-    fetch(`/api/get_daily_transactions_with_returns/${encodeURIComponent(lugar)}`)
+    fetch(`/api/get_daily_transactions/${encodeURIComponent(lugar)}`)
         .then(response => response.json())
         .then(data => {
             if (data.success) {
@@ -233,7 +214,7 @@ function loadDailySummary(lugar) {
                 
                 // Actualizar resumen
                 document.getElementById('dailyNetSales').textContent = dailyData.net_sales;
-                document.getElementById('dailyNetAmount').textContent = `$${Math.max(0, dailyData.total_amount).toLocaleString('es-CL')}`;
+                document.getElementById('dailyNetAmount').textContent = `$${dailyData.total_amount.toLocaleString('es-CL')}`;
                 document.getElementById('dailySalesCount').textContent = dailyData.total_sales;
                 document.getElementById('dailyReturnsCount').textContent = dailyData.total_returns;
                 document.getElementById('summaryLocation').textContent = lugar;
@@ -277,7 +258,7 @@ function updateDailyTransactionsTable(transactions) {
         return `
             <tr class="transaction-${tipo}">
                 <td>
-                    <span class="badge badge-${tipo}">
+                    <span class="badge ${isReturn ? 'bg-danger' : 'bg-success'}">
                         ${isReturn ? 'Devolución' : 'Venta'}
                     </span>
                 </td>
@@ -286,7 +267,7 @@ function updateDailyTransactionsTable(transactions) {
                     ${trans.descripcion}
                     ${isReturn && trans.motivo ? `<br><small class="text-muted">Motivo: ${trans.motivo}</small>` : ''}
                 </td>
-                <td class="${isReturn ? 'text-negative' : 'text-brown-primary'}">
+                <td class="${isReturn ? 'text-danger' : 'text-brown-primary'}">
                     ${isReturn ? '-' : ''}${precioFormatted}
                 </td>
                 <td class="text-brown-light">${trans.timestamp ? trans.timestamp.split(' ')[1] : ''}</td>
@@ -499,7 +480,7 @@ function processOperation() {
     // Determinar qué botón y endpoint usar
     const isReturn = currentOperationType === 'devolucion';
     const submitBtn = isReturn ? document.getElementById('submitReturnBtn') : document.getElementById('submitSaleBtn');
-    const endpoint = isReturn ? '/api/process_product_return' : '/api/record_sale';
+    const endpoint = isReturn ? '/api/process_return' : '/api/record_sale';
     
     // Mostrar loading
     const originalText = submitBtn.innerHTML;
