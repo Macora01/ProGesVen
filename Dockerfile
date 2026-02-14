@@ -19,4 +19,4 @@ EXPOSE 5000
 
 # Usamos Gunicorn como servidor web para producción, es mucho más robusto que el servidor de desarrollo de Flask
 # El comando ejecuta la aplicación definida como 'app' dentro del archivo 'app.py'
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app"]
+CMD ["gunicorn", "--bind", "0.0.0.0:5005", "app:app"]
