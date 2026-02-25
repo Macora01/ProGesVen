@@ -2,19 +2,314 @@
 
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="search-box text-center">
-            <h2 class="mb-4">En Construcción</h2>
-            <i class="fas fa-tools fa-4x text-muted mb-4"></i>
-            <h4 class="text-muted">Próximamente</h4>
-            <p class="text-muted">Esta sección está en desarrollo y estará disponible pronto.</p>
+    <div class="col-md-8">
+        
+        <!-- VISTA DE LOGIN -->
+        <div id="loginSection" class="search-box text-center">
+            <h2 class="mb-4">🔐 Identificación</h2>
+            <p class="text-muted">Ingrese su <strong>Nombre</strong> para continuar</p>
+            
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text"><i class="fas fa-user"></i></span>
+                        <input type="text" id="userInput" class="form-control" placeholder="Escriba su nombre">
+                    </div>
+                    <button onclick="loginUser()" class="btn btn-brown w-100">
+                        <i class="fas fa-sign-in-alt me-2"></i>Ingresar
+                    </button>
+                    <div id="loginError" class="text-danger mt-2 small"></div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-4">
+                <a href="{{ url_for('index') }}" class="btn btn-brown-outline btn-sm">
+                    <i class="fas fa-arrow-left me-2"></i>Volver al Menú
+                </a>
+            </div>
         </div>
 
-        <div class="text-center mt-3">
-             <a href="{{ url_for('index') }}" class="btn btn-brown-outline">
-                <i class="fas fa-arrow-left me-2"></i>Volver al Menú Principal
-            </a>
+        <!-- VISTA DE APLICACIÓN -->
+        <div id="appSection" style="display:none;">
+            
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4>📋 Solicitudes de Devolución</h4>
+                <button onclick="logout()" class="btn btn-brown-outline btn-sm">
+                    <i class="fas fa-sign-out-alt me-1"></i> Salir
+                </button>
+            </div>
+
+            <!-- Info Usuario -->
+            <div class="search-box p-3 mb-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span>Bienvenido: <strong id="userNameDisplay"></strong></span>
+                    <span id="roleDisplay" class="badge bg-secondary"></span>
+                </div>
+            </div>
+
+            <!-- FORMULARIO (Solo para Solicitantes - Se oculta si es Admin) -->
+            <div id="formContainer" class="search-box">
+                <h5 class="mb-3"><i class="fas fa-plus-circle me-2"></i>Nueva Solicitud</h5>
+                
+                <div class="row mb-3">
+                    <div class="col-md-7">
+                        <label class="form-label small fw-bold">Nombre de la Clienta</label>
+                        <input type="text" id="inputCliente" class="form-control" placeholder="Nombre de quien devuelve">
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label small fw-bold">Monto ($)</label>
+                        <input type="number" id="inputMonto" class="form-control" placeholder="0.00">
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold">Banco</label>
+                        <input type="text" id="inputBanco" class="form-control" placeholder="Ej: BancoEstado">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold">RUT</label>
+                        <input type="text" id="inputRut" class="form-control" placeholder="Ej: 12.345.678-9">
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold">Email</label>
+                        <input type="email" id="inputEmail" class="form-control" placeholder="correo@ejemplo.com">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold">Fecha</label>
+                        <input type="text" id="inputFecha" class="form-control" disabled style="background-color: #e9ecef;">
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Motivo / Observación</label>
+                    <textarea id="inputMotivo" class="form-control" rows="2"></textarea>
+                </div>
+                <button onclick="crearSolicitud()" class="btn btn-brown w-100">
+                    <i class="fas fa-paper-plane me-2"></i>Enviar Solicitud
+                </button>
+            </div>
+            <!-- FIN FORMULARIO -->
+
+            <!-- Listado -->
+            <div class="search-box mt-4">
+                <h5 class="mb-3"><i class="fas fa-list me-2"></i>Listado</h5>
+                <div id="listaSolicitudes">
+                    <p class="text-center text-muted">Cargando...</p>
+                </div>
+            </div>
+
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let currentUser = null;
+    let isAdmin = false;
+
+    function getTodayDate() {
+        const today = new Date();
+        return today.toLocaleDateString('es-CL');
+    }
+
+    async function loginUser() {
+        const inputVal = document.getElementById('userInput').value.trim();
+        const errorDiv = document.getElementById('loginError');
+        if(!inputVal) { errorDiv.innerText = "Ingrese su nombre"; return; }
+
+        try {
+            const response = await fetch('/api/solicitudes_login', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({identificador: inputVal})
+            });
+            const data = await response.json();
+
+            if(data.success) {
+                currentUser = data;
+                isAdmin = data.es_admin;
+                
+                document.getElementById('loginSection').style.display = 'none';
+                document.getElementById('appSection').style.display = 'block';
+                document.getElementById('userNameDisplay').innerText = data.nombre;
+                document.getElementById('inputFecha').value = getTodayDate();
+
+                const roleBadge = document.getElementById('roleDisplay');
+                const formContainer = document.getElementById('formContainer');
+
+                if(isAdmin) {
+                    roleBadge.innerText = "ADMINISTRADOR";
+                    roleBadge.className = "badge bg-success";
+                    // OCULTAR FORMULARIO SI ES ADMIN
+                    formContainer.style.display = 'none';
+                } else {
+                    roleBadge.innerText = "SOLICITANTE";
+                    roleBadge.className = "badge bg-secondary";
+                    // MOSTRAR FORMULARIO SI ES USUARIO
+                    formContainer.style.display = 'block';
+                }
+                
+                cargarSolicitudes();
+            } else {
+                errorDiv.innerText = data.message;
+            }
+        } catch (error) {
+            errorDiv.innerText = "Error de conexión";
+        }
+    }
+
+    async function cargarSolicitudes() {
+        const container = document.getElementById('listaSolicitudes');
+        container.innerHTML = '<p class="text-center">Cargando...</p>';
+
+        try {
+            const response = await fetch('/api/get_solicitudes');
+            const data = await response.json();
+            
+            container.innerHTML = '';
+            
+            let lista = data.solicitudes;
+            // Admin ve todo, usuario solo las suyas
+            if(!isAdmin) {
+                lista = lista.filter(s => s.solicitante_nombre === currentUser.nombre);
+            }
+
+            if(lista.length === 0) {
+                container.innerHTML = '<p class="text-center text-muted">No hay solicitudes para mostrar.</p>';
+                return;
+            }
+
+            lista.forEach(sol => {
+                const isPendiente = sol.estado === 'Pendiente';
+                const estadoClass = isPendiente ? 'text-danger' : 'text-success';
+                const borderStyle = isPendiente ? 'border-left: 4px solid #8B4513;' : 'border-left: 4px solid #ccc; opacity: 0.7;';
+                
+                let btnHtml = '';
+                // Solo Admin ve boton de cerrar y solo si está pendiente
+                if(isAdmin && isPendiente) {
+                    btnHtml = `<button onclick="iniciarCierre('${sol.id}')" class="btn btn-sm btn-success float-end">✅ Cerrar</button>`;
+                }
+
+                // Mostrar datos adicionales
+                let extraInfo = '';
+                if(sol.banco) extraInfo += `<span class="badge bg-light text-dark me-1">${sol.banco}</span>`;
+                if(sol.rut) extraInfo += `<span class="badge bg-light text-dark me-1">RUT: ${sol.rut}</span>`;
+                if(sol.email) extraInfo += `<span class="badge bg-light text-dark">${sol.email}</span>`;
+                if(extraInfo !== '') extraInfo = `<div class="mt-1 small">${extraInfo}</div>`;
+
+                // Mostrar comentario de cierre si existe
+                let cierreHtml = '';
+                if (sol.comentario_cierre) {
+                    cierreHtml = `
+                        <div class="alert alert-success p-1 mt-2 mb-0 small">
+                            <strong>Cierre:</strong> ${sol.comentario_cierre}
+                        </div>`;
+                }
+
+                const cardHtml = `
+                    <div class="card mb-2" style="${borderStyle}">
+                        <div class="card-body p-2">
+                            <div class="d-flex justify-content-between">
+                                <h6 class="${estadoClass} fw-bold mb-0">[${sol.estado}]</h6>
+                                <small class="text-muted">${sol.timestamp.split(' ')[0]}</small>
+                            </div>
+                            <hr class="my-2">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div style="width: 85%">
+                                    <p class="mb-1"><strong>Cliente:</strong> ${sol.cliente_nombre}</p>
+                                    <p class="mb-1"><strong>Monto:</strong> $${sol.monto}</p>
+                                    <p class="mb-1 small text-secondary"><em>${sol.motivo || 'Sin detalle'}</em></p>
+                                    ${extraInfo}
+                                    ${cierreHtml}
+                                    <small class="text-muted d-block mt-1">Por: ${sol.solicitante_nombre}</small>
+                                </div>
+                                ${btnHtml}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += cardHtml;
+            });
+
+        } catch (e) {
+            container.innerHTML = '<p class="text-danger">Error al cargar datos</p>';
+        }
+    }
+
+    async function crearSolicitud() {
+        const payload = {
+            solicitante: currentUser.nombre,
+            solicitante_nombre: currentUser.nombre,
+            cliente: document.getElementById('inputCliente').value,
+            monto: document.getElementById('inputMonto').value,
+            banco: document.getElementById('inputBanco').value,
+            rut: document.getElementById('inputRut').value,
+            email: document.getElementById('inputEmail').value,
+            motivo: document.getElementById('inputMotivo').value
+        };
+
+        if(!payload.cliente || !payload.monto) {
+            alert("Complete al menos nombre de clienta y monto.");
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/create_solicitud', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            });
+            const data = await response.json();
+            if(data.success) {
+                document.getElementById('inputCliente').value = '';
+                document.getElementById('inputMonto').value = '';
+                document.getElementById('inputBanco').value = '';
+                document.getElementById('inputRut').value = '';
+                document.getElementById('inputEmail').value = '';
+                document.getElementById('inputMotivo').value = '';
+                cargarSolicitudes();
+            } else {
+                alert(data.message);
+            }
+        } catch(e) { alert("Error al enviar"); }
+    }
+
+    // Nueva función para pedir el comentario antes de cerrar
+    function iniciarCierre(id) {
+        const comentario = prompt("⚠️ Debe ingresar un comentario para cerrar la solicitud:");
+        
+        // Si el usuario presiona "Cancelar" o deja el texto vacío
+        if (comentario === null || comentario.trim() === "") {
+            if(comentario !== null) alert("El comentario es obligatorio para cerrar.");
+            return;
+        }
+
+        confirmarCierre(id, comentario.trim());
+    }
+
+    async function confirmarCierre(id, comentario) {
+        try {
+            const response = await fetch('/api/close_solicitud', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({id: id, comentario: comentario})
+            });
+            const data = await response.json();
+            if(data.success) {
+                cargarSolicitudes();
+            } else {
+                alert(data.message);
+            }
+        } catch(e) { alert("Error al cerrar"); }
+    }
+
+    function logout() {
+        location.reload();
+    }
+</script>
 {% endblock %}

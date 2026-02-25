@@ -1143,6 +1143,124 @@ def api_get_daily_transactions_with_returns(lugar):
         })
 
 # =============================================================================
+# SISTEMA DE SOLICITUDES - COPIAR Y PEGAR JUNTO
+# =============================================================================
+
+@app.route('/api/solicitudes_login', methods=['POST'])
+def api_solicitudes_login():
+    """Validar usuario por Nombre"""
+    input_user = request.json.get('identificador', '').strip().lower()
+    telefonos = load_csv('telefonos.csv')
+    
+    usuario_encontrado = None
+    es_admin = False
+    
+    for t in telefonos:
+        nombre_csv = str(t.get('nombre', '')).strip().lower()
+        
+        if nombre_csv == input_user:
+            usuario_encontrado = t
+            permiso = str(t.get('allow', '')).strip()
+            if permiso == 'A':
+                es_admin = True
+            break
+    
+    if usuario_encontrado:
+        return jsonify({
+            'success': True, 
+            'nombre': usuario_encontrado.get('nombre', 'Usuario'),
+            'identificador': input_user,
+            'es_admin': es_admin
+        })
+    else:
+        return jsonify({'success': False, 'message': 'Usuario no encontrado'})
+
+@app.route('/api/get_solicitudes', methods=['GET'])
+def api_get_solicitudes():
+    """Obtener lista de solicitudes"""
+    try:
+        solicitudes = load_csv('solicitudes.csv')
+        solicitudes.sort(key=lambda x: x.get('timestamp', ''), reverse=True)
+        return jsonify({'success': True, 'solicitudes': solicitudes})
+    except:
+        return jsonify({'success': True, 'solicitudes': []})
+
+@app.route('/api/create_solicitud', methods=['POST'])
+def api_create_solicitud():
+    """Crear una nueva solicitud"""
+    data = request.json
+    if not data.get('solicitante') or not data.get('cliente'):
+        return jsonify({'success': False, 'message': 'Faltan datos'})
+
+    import random
+    nuevo_id = f"{datetime.now().strftime('%Y%m%d%H%M%S')}{random.randint(10,99)}"
+    
+    nueva_solicitud = {
+        'id': nuevo_id,
+        'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+        'solicitante_telefono': data.get('solicitante_telefono', ''),
+        'solicitante_nombre': data.get('solicitante', ''),
+        'cliente_nombre': data.get('cliente', ''),
+        'banco': data.get('banco', ''),
+        'rut': data.get('rut', ''),
+        'email': data.get('email', ''),
+        'monto': data.get('monto', '0'),
+        'motivo': data.get('motivo', ''),
+        'estado': 'Pendiente',
+        'comentario_cierre': '' 
+    }
+    
+    filepath = os.path.join(DATA_DIR, 'solicitudes.csv')
+    fieldnames = ['id', 'timestamp', 'solicitante_telefono', 'solicitante_nombre', 
+                  'cliente_nombre', 'banco', 'rut', 'email', 'monto', 'motivo', 'estado', 'comentario_cierre']
+    
+    file_exists = os.path.exists(filepath)
+    
+    try:
+        with open(filepath, 'a', newline='', encoding=app_config.CSV_ENCODING) as file:
+            writer = csv.DictWriter(file, fieldnames=fieldnames, delimiter=app_config.CSV_DELIMITER)
+            if not file_exists:
+                writer.writeheader()
+            writer.writerow(nueva_solicitud)
+        return jsonify({'success': True, 'message': 'Solicitud creada'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'Error al guardar: {str(e)}'})
+
+@app.route('/api/close_solicitud', methods=['POST'])
+def api_close_solicitud():
+    """Cerrar una solicitud"""
+    solicitud_id = request.json.get('id')
+    comentario = request.json.get('comentario', '').strip()
+    
+    if not comentario:
+        return jsonify({'success': False, 'message': 'El comentario es obligatorio.'})
+    if not solicitud_id:
+        return jsonify({'success': False, 'message': 'ID no proporcionado'})
+
+    filepath = os.path.join(DATA_DIR, 'solicitudes.csv')
+    if not os.path.exists(filepath):
+        return jsonify({'success': False, 'message': 'Archivo no existe'})
+
+    try:
+        solicitudes = load_csv('solicitudes.csv')
+        for sol in solicitudes:
+            if sol.get('id') == solicitud_id:
+                sol['estado'] = 'Cerrado'
+                sol['comentario_cierre'] = comentario
+                break
+        
+        fieldnames = ['id', 'timestamp', 'solicitante_telefono', 'solicitante_nombre', 
+                      'cliente_nombre', 'banco', 'rut', 'email', 'monto', 'motivo', 'estado', 'comentario_cierre']
+        
+        save_csv('solicitudes.csv', solicitudes, fieldnames)
+        return jsonify({'success': True, 'message': 'Solicitud cerrada'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'Error: {str(e)}'})
+
+# =============================================================================
+# FIN SISTEMA DE SOLICITUDES
+# =============================================================================
+# =============================================================================
 # FIN DEL ARCHIVO - Esto debe ir al final
 # =============================================================================
 
