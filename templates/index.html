@@ -69,15 +69,28 @@
                 </a>
             </div>
 
-            <div class="col-12 col-sm-6 mx-auto">
-                <a href="{{ url_for('under_construction') }}" class="card menu-card h-100 text-decoration-none">
-                    <div class="card-body text-center p-4">
-                        <i class="fas fa-tools fa-3x mb-3 text-brown-primary"></i>
+<!-- INICIO TARJETA SOLICITUDES (CON NOTIFICACIÓN) -->
+<div class="col-12 col-sm-6">
+    <a href="{{ url_for('solicitudes') }}" class="card menu-card h-100 text-decoration-none position-centered">
+        
+        <!-- PUNTO ROJO DE NOTIFICACIÓN -->
+        {% if pendientes_count > 0 %}
+        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="z-index: 10;">
+            {{ pendientes_count }}
+            <span class="visually-hidden">solicitudes pendientes</span>
+        </span>
+        {% endif %}
+        <!-- FIN PUNTO ROJO -->
+
+        <div class="card-body text-center d-flex flex-column justify-content-center">
+            <!-- Ícono (puedes cambiarlo si usas otro) -->
+                       <i class="fas fa-info-circle fa-3x mb-3 text-brown-primary"></i>
                         <h5 class="card-title text-brown-primary">Solicitudes</h5>
-                        <p class="card-text text-brown-light small">Devoluciones y Solicitudes</p>
-                    </div>
+                        <p class="card-text text-brown-light small">Devoluciones y otras solicitudes</p>
+                    </div>      
                 </a>
-            </div>
+        </div>
+<!-- FIN TARJETA SOLICITUDES -->
         </div>
     </div>
 </div>

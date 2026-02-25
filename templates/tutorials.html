@@ -2,74 +2,147 @@
 
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-md-10">
-        <div class="search-box">
-            <h2 class="text-center mb-4">Tutoriales de Venta</h2>
-            
+    <div class="col-md-11">
+        <div class="search-box text-center mb-4">
+            <h2><i class="fas fa-chalkboard-teacher me-2"></i>Tutoriales de Venta</h2>
+            <p class="text-muted mb-0">Selecciona un módulo para ver el contenido</p>
+        </div>
+
+        <!-- MENSAJE DE DEBUG: Avisa si no hay datos -->
+        {% if not tutoriales %}
+            <div class="alert alert-warning text-center">
+                <strong>Oops!</strong> No se encontraron tutoriales en <code>data/tutoriales.csv</code>.<br>
+                Verifica que el archivo exista y tenga el formato correcto (separado por punto y coma <strong>;</strong>).
+            </div>
+        {% else %}
+            <!-- MOSAICO DE TARJETAS -->
             <div class="row">
                 {% for tutorial in tutoriales %}
-                <div class="col-md-6 mb-4">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <div class="d-flex align-items-center mb-3">
-                                {% if tutorial.tipo == 'video' %}
-                                <i class="fas fa-video text-danger fa-2x me-3"></i>
-                                {% elif tutorial.tipo == 'pdf' %}
-                                <i class="fas fa-file-pdf text-danger fa-2x me-3"></i>
-                                {% elif tutorial.tipo == 'html' %}
-                                <i class="fas fa-code text-primary fa-2x me-3"></i>
-                                {% else %}
-                                <i class="fas fa-file text-secondary fa-2x me-3"></i>
-                                {% endif %}
-                                <div>
-                                    <h5 class="card-title mb-0">{{ tutorial.titulo }}</h5>
-                                    <small class="text-muted">{{ tutorial.tipo|upper }}</small>
-                                </div>
-                            </div>
-                            <p class="card-text">{{ tutorial.descripcion }}</p>
-                        </div>
-                        <div class="card-footer bg-transparent">
-                            {% if tutorial.tipo == 'video' %}
-                            <a href="{{ url_for('static', filename='tutoriales/' + tutorial.archivo) }}" 
-                               class="btn btn-outline-danger btn-sm" target="_blank">
-                                <i class="fas fa-play me-1"></i>Ver Video
-                            </a>
-                            {% elif tutorial.tipo == 'pdf' %}
-                            <a href="{{ url_for('static', filename='tutoriales/' + tutorial.archivo) }}" 
-                               class="btn btn-outline-danger btn-sm" target="_blank">
-                                <i class="fas fa-file-pdf me-1"></i>Abrir PDF
-                            </a>
-                            {% elif tutorial.tipo == 'html' %}
-                            <a href="{{ url_for('static', filename='tutoriales/' + tutorial.archivo) }}" 
-                               class="btn btn-outline-primary btn-sm" target="_blank">
-                                <i class="fas fa-external-link-alt me-1"></i>Abrir Tutorial
-                            </a>
+                
+                <!-- Detectar si es link externo (http) o archivo local -->
+                {% set is_external = tutorial.archivo.startswith('http') if tutorial.archivo else False %}
+                
+                <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                    <div class="card h-100 border-0 shadow-sm tutorial-card"
+                         {% if tutorial.tipo == 'video' %}
+                            {% if is_external %}
+                                onclick="abrirVideo('{{ tutorial.archivo }}')"
                             {% else %}
-                            <a href="{{ url_for('static', filename='tutoriales/' + tutorial.archivo) }}" 
-                               class="btn btn-outline-secondary btn-sm" target="_blank">
-                                <i class="fas fa-download me-1"></i>Descargar
-                            </a>
+                                onclick="abrirVideoLocal('/static/tutoriales/{{ tutorial.archivo }}')"
                             {% endif %}
+                         {% elif tutorial.tipo == 'pdf' or tutorial.tipo == 'documento' %}
+                             onclick="window.open('/static/tutoriales/{{ tutorial.archivo }}', '_blank')"
+                         {% endif %}
+                         style="cursor: pointer;">
+                        
+                        <div class="card-body text-center d-flex flex-column justify-content-center p-4">
+                            <!-- Ícono Grande -->
+                            <div class="icon-container mb-3">
+                                <i class="fas {{ tutorial.icono }} fa-3x text-brown"></i>
+                            </div>
+                            
+                            <!-- Título -->
+                            <h5 class="card-title text-brown fw-bold mb-2">{{ tutorial.titulo }}</h5>
+                            
+                            <!-- Descripción -->
+                            <p class="card-text small text-muted flex-grow-1">{{ tutorial.descripcion }}</p>
+                            
+                            <!-- Badge indicador -->
+                            <span class="badge {% if tutorial.tipo == 'video' %}bg-danger{% elif tutorial.tipo == 'pdf' %}bg-primary{% else %}bg-secondary{% endif %} align-self-center mt-2">
+                                {% if tutorial.tipo == 'video' %}
+                                    <i class="fas fa-play-circle me-1"></i> Ver Video
+                                {% elif tutorial.tipo == 'pdf' %}
+                                    <i class="fas fa-file-pdf me-1"></i> Abrir PDF
+                                {% else %}
+                                    <i class="fas fa-external-link-alt me-1"></i> Abrir
+                                {% endif %}
+                            </span>
                         </div>
                     </div>
                 </div>
                 {% endfor %}
             </div>
-
-            {% if not tutoriales %}
-            <div class="text-center py-5">
-                <i class="fas fa-graduation-cap fa-4x text-muted mb-3"></i>
-                <h4 class="text-muted">No hay tutoriales disponibles</h4>
-                <p class="text-muted">Los tutoriales se agregarán próximamente.</p>
-            </div>
-            {% endif %}
-        </div>
+        {% endif %}
 
         <div class="text-center mt-3">
-             <a href="{{ url_for('index') }}" class="btn btn-brown-outline">
+            <a href="{{ url_for('index') }}" class="btn btn-brown-outline">
                 <i class="fas fa-arrow-left me-2"></i>Volver al Menú Principal
             </a>
         </div>
     </div>
 </div>
+
+<!-- MODAL PARA VIDEOS -->
+<div class="modal fade" id="videoModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content bg-dark border-0">
+            <div class="modal-header border-0">
+                <h5 class="modal-title text-white">Tutorial</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" onclick="detenerVideo()"></button>
+            </div>
+            <div class="modal-body p-0">
+                <!-- Para YouTube (iframe) -->
+                <div class="ratio ratio-16x9" id="youtubeContainer" style="display:none;">
+                    <iframe id="videoFrame" src="" title="Video Tutorial" frameborder="0" allowfullscreen></iframe>
+                </div>
+                <!-- Para Videos Locales -->
+                <div class="ratio ratio-16x9" id="localVideoContainer" style="display:none;">
+                    <video id="localVideo" controls>
+                        Tu navegador no soporta video HTML5.
+                    </video>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    var videoModal = new bootstrap.Modal(document.getElementById('videoModal'));
+    var videoFrame = document.getElementById('videoFrame');
+    var localVideo = document.getElementById('localVideo');
+    var youtubeContainer = document.getElementById('youtubeContainer');
+    var localContainer = document.getElementById('localVideoContainer');
+
+    function abrirVideo(url) {
+        youtubeContainer.style.display = 'block';
+        localContainer.style.display = 'none';
+        videoFrame.src = url;
+        videoModal.show();
+    }
+
+    function abrirVideoLocal(url) {
+        youtubeContainer.style.display = 'none';
+        localContainer.style.display = 'block';
+        localVideo.src = url;
+        localVideo.play();
+        videoModal.show();
+    }
+
+    function detenerVideo() {
+        videoFrame.src = "";
+        localVideo.pause();
+        localVideo.src = "";
+    }
+</script>
+
+<style>
+    .text-brown { color: #8B4513; }
+    
+    .tutorial-card {
+        border-radius: 10px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        background-color: #fff;
+    }
+
+    .tutorial-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 20px rgba(139, 69, 19, 0.2) !important;
+    }
+    
+    .icon-container { transition: transform 0.3s ease; }
+    .tutorial-card:hover .icon-container { transform: scale(1.1); }
+</style>
 {% endblock %}

@@ -86,7 +86,16 @@ def save_csv(filename, data, fieldnames):
 # Rutas principales
 @app.route('/')
 def index():
-    return render_template('index.html')
+    # Calcular notificaciones de solicitudes pendientes
+    pendientes_count = 0
+    try:
+        solicitudes = load_csv('solicitudes.csv')
+        # Contar solo las que tienen estado "Pendiente"
+        pendientes_count = len([s for s in solicitudes if s.get('estado') == 'Pendiente'])
+    except:
+        pass # Si no hay archivo, el contador queda en 0
+        
+    return render_template('index.html', pendientes_count=pendientes_count)
 
 @app.route('/search')
 def search():
@@ -1146,38 +1155,35 @@ def api_get_daily_transactions_with_returns(lugar):
 # SISTEMA DE SOLICITUDES - COPIAR Y PEGAR JUNTO
 # =============================================================================
 
+# =============================================================================
+# BLOQUE COMPLETO SOLICITUDES - REEMPLAZAR TODO
+# =============================================================================
+
+@app.route('/solicitudes')
+def solicitudes():
+    return render_template('solicitudes.html')
+
 @app.route('/api/solicitudes_login', methods=['POST'])
 def api_solicitudes_login():
-    """Validar usuario por Nombre"""
-    input_user = request.json.get('identificador', '').strip().lower()
-    telefonos = load_csv('telefonos.csv')
-    
-    usuario_encontrado = None
-    es_admin = False
-    
-    for t in telefonos:
-        nombre_csv = str(t.get('nombre', '')).strip().lower()
+    try:
+        input_user = request.json.get('identificador', '').strip().lower()
+        telefonos = load_csv('telefonos.csv')
         
-        if nombre_csv == input_user:
-            usuario_encontrado = t
-            permiso = str(t.get('allow', '')).strip()
-            if permiso == 'A':
-                es_admin = True
-            break
-    
-    if usuario_encontrado:
-        return jsonify({
-            'success': True, 
-            'nombre': usuario_encontrado.get('nombre', 'Usuario'),
-            'identificador': input_user,
-            'es_admin': es_admin
-        })
-    else:
+        usuario = next((t for t in telefonos if str(t.get('nombre', '')).strip().lower() == input_user), None)
+        
+        if usuario:
+            es_admin = str(usuario.get('allow', '')).strip() == 'A'
+            return jsonify({
+                'success': True, 
+                'nombre': usuario.get('nombre', 'Usuario'),
+                'es_admin': es_admin
+            })
         return jsonify({'success': False, 'message': 'Usuario no encontrado'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'Error servidor: {str(e)}'})
 
 @app.route('/api/get_solicitudes', methods=['GET'])
 def api_get_solicitudes():
-    """Obtener lista de solicitudes"""
     try:
         solicitudes = load_csv('solicitudes.csv')
         solicitudes.sort(key=lambda x: x.get('timestamp', ''), reverse=True)
@@ -1187,75 +1193,72 @@ def api_get_solicitudes():
 
 @app.route('/api/create_solicitud', methods=['POST'])
 def api_create_solicitud():
-    """Crear una nueva solicitud"""
-    data = request.json
-    if not data.get('solicitante') or not data.get('cliente'):
-        return jsonify({'success': False, 'message': 'Faltan datos'})
-
-    import random
-    nuevo_id = f"{datetime.now().strftime('%Y%m%d%H%M%S')}{random.randint(10,99)}"
-    
-    nueva_solicitud = {
-        'id': nuevo_id,
-        'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-        'solicitante_telefono': data.get('solicitante_telefono', ''),
-        'solicitante_nombre': data.get('solicitante', ''),
-        'cliente_nombre': data.get('cliente', ''),
-        'banco': data.get('banco', ''),
-        'rut': data.get('rut', ''),
-        'email': data.get('email', ''),
-        'monto': data.get('monto', '0'),
-        'motivo': data.get('motivo', ''),
-        'estado': 'Pendiente',
-        'comentario_cierre': '' 
-    }
-    
-    filepath = os.path.join(DATA_DIR, 'solicitudes.csv')
-    fieldnames = ['id', 'timestamp', 'solicitante_telefono', 'solicitante_nombre', 
-                  'cliente_nombre', 'banco', 'rut', 'email', 'monto', 'motivo', 'estado', 'comentario_cierre']
-    
-    file_exists = os.path.exists(filepath)
-    
     try:
-        with open(filepath, 'a', newline='', encoding=app_config.CSV_ENCODING) as file:
-            writer = csv.DictWriter(file, fieldnames=fieldnames, delimiter=app_config.CSV_DELIMITER)
-            if not file_exists:
-                writer.writeheader()
-            writer.writerow(nueva_solicitud)
-        return jsonify({'success': True, 'message': 'Solicitud creada'})
+        data = request.json
+        tipo = data.get('tipo', 'Devolución')
+        
+        # Validaciones según tipo
+        if tipo == 'Devolución':
+            if not data.get('cliente') or not data.get('monto'):
+                return jsonify({'success': False, 'message': 'Faltan datos de devolución'})
+        elif not data.get('motivo'):
+             return jsonify({'success': False, 'message': 'Debe detallar la solicitud'})
+
+        import random
+        nuevo_id = f"{datetime.now().strftime('%Y%m%d%H%M%S')}{random.randint(10,99)}"
+        
+        nueva = {
+            'id': nuevo_id,
+            'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            'solicitante_nombre': data.get('solicitante', ''),
+            'tipo': tipo,
+            'cliente_nombre': data.get('cliente', ''),
+            'banco': data.get('banco', ''),
+            'rut': data.get('rut', ''),
+            'email': data.get('email', ''),
+            'monto': data.get('monto', '0'),
+            'motivo': data.get('motivo', ''),
+            'estado': 'Pendiente',
+            'comentario_cierre': ''
+        }
+        
+        fieldnames = ['id', 'timestamp', 'solicitante_nombre', 'tipo', 'cliente_nombre', 
+                      'banco', 'rut', 'email', 'monto', 'motivo', 'estado', 'comentario_cierre']
+        
+        filepath = os.path.join(DATA_DIR, 'solicitudes.csv')
+        file_exists = os.path.exists(filepath)
+        
+        with open(filepath, 'a', newline='', encoding=app_config.CSV_ENCODING) as f:
+            w = csv.DictWriter(f, fieldnames=fieldnames, delimiter=app_config.CSV_DELIMITER)
+            if not file_exists: w.writeheader()
+            w.writerow(nueva)
+            
+        return jsonify({'success': True})
     except Exception as e:
         return jsonify({'success': False, 'message': f'Error al guardar: {str(e)}'})
 
 @app.route('/api/close_solicitud', methods=['POST'])
 def api_close_solicitud():
-    """Cerrar una solicitud"""
-    solicitud_id = request.json.get('id')
-    comentario = request.json.get('comentario', '').strip()
-    
-    if not comentario:
-        return jsonify({'success': False, 'message': 'El comentario es obligatorio.'})
-    if not solicitud_id:
-        return jsonify({'success': False, 'message': 'ID no proporcionado'})
-
-    filepath = os.path.join(DATA_DIR, 'solicitudes.csv')
-    if not os.path.exists(filepath):
-        return jsonify({'success': False, 'message': 'Archivo no existe'})
-
     try:
+        sid = request.json.get('id')
+        comment = request.json.get('comentario', '').strip()
+        
+        if not comment: return jsonify({'success': False, 'message': 'Comentario obligatorio'})
+        
         solicitudes = load_csv('solicitudes.csv')
-        for sol in solicitudes:
-            if sol.get('id') == solicitud_id:
-                sol['estado'] = 'Cerrado'
-                sol['comentario_cierre'] = comentario
+        for s in solicitudes:
+            if s.get('id') == sid:
+                s['estado'] = 'Cerrado'
+                s['comentario_cierre'] = comment
                 break
         
-        fieldnames = ['id', 'timestamp', 'solicitante_telefono', 'solicitante_nombre', 
-                      'cliente_nombre', 'banco', 'rut', 'email', 'monto', 'motivo', 'estado', 'comentario_cierre']
-        
+        fieldnames = ['id', 'timestamp', 'solicitante_nombre', 'tipo', 'cliente_nombre', 
+                      'banco', 'rut', 'email', 'monto', 'motivo', 'estado', 'comentario_cierre']
         save_csv('solicitudes.csv', solicitudes, fieldnames)
-        return jsonify({'success': True, 'message': 'Solicitud cerrada'})
+        
+        return jsonify({'success': True})
     except Exception as e:
-        return jsonify({'success': False, 'message': f'Error: {str(e)}'})
+        return jsonify({'success': False, 'message': f'Error cerrando: {str(e)}'})
 
 # =============================================================================
 # FIN SISTEMA DE SOLICITUDES

@@ -145,7 +145,7 @@
         "kind": 2,
         "importPath": "app",
         "description": "app",
-        "peekOfCode": "def index():\n    return render_template('index.html')\n@app.route('/search')\ndef search():\n    return render_template('search.html')\n@app.route('/api/search_product', methods=['POST'])\ndef api_search_product():\n    code = request.json.get('code', '').strip().upper()\n    # Si el código tiene 5 caracteres y no empieza con BI, intentar agregar BI6\n    if len(code) == 5 and not code.startswith('BI'):",
+        "peekOfCode": "def index():\n    # Calcular notificaciones de solicitudes pendientes\n    pendientes_count = 0\n    try:\n        solicitudes = load_csv('solicitudes.csv')\n        # Contar solo las que tienen estado \"Pendiente\"\n        pendientes_count = len([s for s in solicitudes if s.get('estado') == 'Pendiente'])\n    except:\n        pass # Si no hay archivo, el contador queda en 0\n    return render_template('index.html', pendientes_count=pendientes_count)",
         "detail": "app",
         "documentation": {}
     },
@@ -420,11 +420,20 @@
         "documentation": {}
     },
     {
+        "label": "solicitudes",
+        "kind": 2,
+        "importPath": "app",
+        "description": "app",
+        "peekOfCode": "def solicitudes():\n    return render_template('solicitudes.html')\n@app.route('/api/solicitudes_login', methods=['POST'])\ndef api_solicitudes_login():\n    try:\n        input_user = request.json.get('identificador', '').strip().lower()\n        telefonos = load_csv('telefonos.csv')\n        usuario = next((t for t in telefonos if str(t.get('nombre', '')).strip().lower() == input_user), None)\n        if usuario:\n            es_admin = str(usuario.get('allow', '')).strip() == 'A'",
+        "detail": "app",
+        "documentation": {}
+    },
+    {
         "label": "api_solicitudes_login",
         "kind": 2,
         "importPath": "app",
         "description": "app",
-        "peekOfCode": "def api_solicitudes_login():\n    \"\"\"Validar usuario por Nombre\"\"\"\n    input_user = request.json.get('identificador', '').strip().lower()\n    telefonos = load_csv('telefonos.csv')\n    usuario_encontrado = None\n    es_admin = False\n    for t in telefonos:\n        nombre_csv = str(t.get('nombre', '')).strip().lower()\n        if nombre_csv == input_user:\n            usuario_encontrado = t",
+        "peekOfCode": "def api_solicitudes_login():\n    try:\n        input_user = request.json.get('identificador', '').strip().lower()\n        telefonos = load_csv('telefonos.csv')\n        usuario = next((t for t in telefonos if str(t.get('nombre', '')).strip().lower() == input_user), None)\n        if usuario:\n            es_admin = str(usuario.get('allow', '')).strip() == 'A'\n            return jsonify({\n                'success': True, \n                'nombre': usuario.get('nombre', 'Usuario'),",
         "detail": "app",
         "documentation": {}
     },
@@ -433,7 +442,7 @@
         "kind": 2,
         "importPath": "app",
         "description": "app",
-        "peekOfCode": "def api_get_solicitudes():\n    \"\"\"Obtener lista de solicitudes\"\"\"\n    try:\n        solicitudes = load_csv('solicitudes.csv')\n        solicitudes.sort(key=lambda x: x.get('timestamp', ''), reverse=True)\n        return jsonify({'success': True, 'solicitudes': solicitudes})\n    except:\n        return jsonify({'success': True, 'solicitudes': []})\n@app.route('/api/create_solicitud', methods=['POST'])\ndef api_create_solicitud():",
+        "peekOfCode": "def api_get_solicitudes():\n    try:\n        solicitudes = load_csv('solicitudes.csv')\n        solicitudes.sort(key=lambda x: x.get('timestamp', ''), reverse=True)\n        return jsonify({'success': True, 'solicitudes': solicitudes})\n    except:\n        return jsonify({'success': True, 'solicitudes': []})\n@app.route('/api/create_solicitud', methods=['POST'])\ndef api_create_solicitud():\n    try:",
         "detail": "app",
         "documentation": {}
     },
@@ -442,7 +451,7 @@
         "kind": 2,
         "importPath": "app",
         "description": "app",
-        "peekOfCode": "def api_create_solicitud():\n    \"\"\"Crear una nueva solicitud\"\"\"\n    data = request.json\n    if not data.get('solicitante') or not data.get('cliente'):\n        return jsonify({'success': False, 'message': 'Faltan datos'})\n    import random\n    nuevo_id = f\"{datetime.now().strftime('%Y%m%d%H%M%S')}{random.randint(10,99)}\"\n    nueva_solicitud = {\n        'id': nuevo_id,\n        'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),",
+        "peekOfCode": "def api_create_solicitud():\n    try:\n        data = request.json\n        tipo = data.get('tipo', 'Devolución')\n        # Validaciones según tipo\n        if tipo == 'Devolución':\n            if not data.get('cliente') or not data.get('monto'):\n                return jsonify({'success': False, 'message': 'Faltan datos de devolución'})\n        elif not data.get('motivo'):\n             return jsonify({'success': False, 'message': 'Debe detallar la solicitud'})",
         "detail": "app",
         "documentation": {}
     },
@@ -451,7 +460,7 @@
         "kind": 2,
         "importPath": "app",
         "description": "app",
-        "peekOfCode": "def api_close_solicitud():\n    \"\"\"Cerrar una solicitud\"\"\"\n    solicitud_id = request.json.get('id')\n    comentario = request.json.get('comentario', '').strip()\n    if not comentario:\n        return jsonify({'success': False, 'message': 'El comentario es obligatorio.'})\n    if not solicitud_id:\n        return jsonify({'success': False, 'message': 'ID no proporcionado'})\n    filepath = os.path.join(DATA_DIR, 'solicitudes.csv')\n    if not os.path.exists(filepath):",
+        "peekOfCode": "def api_close_solicitud():\n    try:\n        sid = request.json.get('id')\n        comment = request.json.get('comentario', '').strip()\n        if not comment: return jsonify({'success': False, 'message': 'Comentario obligatorio'})\n        solicitudes = load_csv('solicitudes.csv')\n        for s in solicitudes:\n            if s.get('id') == sid:\n                s['estado'] = 'Cerrado'\n                s['comentario_cierre'] = comment",
         "detail": "app",
         "documentation": {}
     },
