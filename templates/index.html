@@ -70,8 +70,9 @@
             </div>
 
 <!-- INICIO TARJETA SOLICITUDES (CON NOTIFICACIÓN) -->
-<div class="col-12 col-sm-6">
-    <a href="{{ url_for('solicitudes') }}" class="card menu-card h-100 text-decoration-none position-centered">
+<!-- Agregamos 'mx-auto' a la clase de abajo para centrar la tarjeta -->
+<div class="col-12 col-sm-6 mx-auto">
+    <a href="{{ url_for('solicitudes') }}" class="card menu-card h-100 text-decoration-none">
         
         <!-- PUNTO ROJO DE NOTIFICACIÓN -->
         {% if pendientes_count > 0 %}
@@ -83,13 +84,13 @@
         <!-- FIN PUNTO ROJO -->
 
         <div class="card-body text-center d-flex flex-column justify-content-center">
-            <!-- Ícono (puedes cambiarlo si usas otro) -->
-                       <i class="fas fa-info-circle fa-3x mb-3 text-brown-primary"></i>
-                        <h5 class="card-title text-brown-primary">Solicitudes</h5>
-                        <p class="card-text text-brown-light small">Devoluciones y otras solicitudes</p>
-                    </div>      
-                </a>
-        </div>
+            <!-- Ícono y textos con tus colores institucionales -->
+            <i class="fas fa-info-circle fa-3x mb-3 text-brown-primary"></i>
+            <h5 class="card-title text-brown-primary">Solicitudes</h5>
+            <p class="card-text text-brown-light small">Devoluciones y otras solicitudes</p>
+        </div>      
+    </a>
+</div>
 <!-- FIN TARJETA SOLICITUDES -->
         </div>
     </div>
